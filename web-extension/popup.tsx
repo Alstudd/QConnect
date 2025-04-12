@@ -1,8 +1,18 @@
 import logo from "data-base64:~assets/logo.png"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 function IndexPopup() {
   const [data, setData] = useState("")
+  const [currentUrl, setCurrentUrl] = useState("")
+
+  // Get current tab URL when popup opens
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.url) {
+        setCurrentUrl(tabs[0].url)
+      }
+    })
+  }, [])
 
   return (
     <div>
@@ -35,15 +45,15 @@ function IndexPopup() {
                 alignItems: "center",
                 padding: 5,
                 justifyContent: "center",
-                gap: "0.5rem", // equivalent to gap-2
+                gap: "0.5rem",
                 whiteSpace: "nowrap",
-                borderRadius: "0.375rem", // equivalent to rounded-md
-                fontSize: "0.875rem", // equivalent to text-sm
-                fontWeight: "500", // equivalent to font-medium
+                borderRadius: "0.375rem",
+                fontSize: "0.875rem",
+                fontWeight: "500",
                 transition: "all 0.2s",
                 border: "1px solid rgba(0, 0, 0, 0.15)",
                 backgroundColor: "var(--background)",
-                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)", // equivalent to shadow-sm
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
                 outline: "none",
                 pointerEvents: "auto",
                 opacity: 1
@@ -56,19 +66,16 @@ function IndexPopup() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round">
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
                 <path d="m9 18 6-6-6-6" />
               </svg>
             </button>
           </a>
         </div>
         <h2 style={{ margin: "auto", marginBottom: 10, marginTop: 10 }}>
-          Welcome to{" "}
-          {/* <a href="https://www.finnovate-ai.vercel.app" target="_blank"> */}
-          QConnect {/* </a> */}
-          Extension!
+          Welcome to QConnect Extension!
         </h2>
         <p
           style={{
@@ -81,15 +88,53 @@ function IndexPopup() {
           your courses, assignments, or exams. I am here to help you with all your
           academic needs.
         </p>
-        {/* <textarea
-        style={{ borderRadius: 5, borderColor: "#999999", padding: 7 }}
-        rows={5}
-        onChange={(e) => setData(e.target.value)}
-        value={data}
-      />
-      <div style={{ justifyItems: "flex-end" }}>
-        <button>Search</button>
-      </div> */}
+        
+        {/* Feature Buttons */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "10px",
+            margin: "15px 0"
+          }}>
+          <a href="/newtab.html">
+            <button
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "8px 16px",
+                justifyContent: "center",
+                borderRadius: "0.375rem",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                backgroundColor: "#3b82f6",
+                color: "white",
+                border: "none",
+                cursor: "pointer"
+              }}>
+              Chat
+            </button>
+          </a>
+          <a href={`/newtab.html?url=${encodeURIComponent(currentUrl)}`}>
+            <button
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "8px 16px",
+                justifyContent: "center",
+                borderRadius: "0.375rem",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                backgroundColor: "#ef4444",
+                color: "white",
+                border: "none",
+                cursor: "pointer"
+              }}>
+              Video
+            </button>
+          </a>
+        </div>
+
         <div
           style={{
             display: "flex",
