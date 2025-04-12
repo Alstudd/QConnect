@@ -43,14 +43,18 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String       @id @default(cuid())
     name          String
-    email         String    @unique
+    email         String       @unique
     password      String
     emailVerified DateTime?
     image         String?
+    isTeacher     Boolean      @default(false)
     accounts      Account[]
     sessions      Session[]
+    Classroom     Classroom[]
+    EnrolledIn    EnrolledIn[]
+    Test          Test[]
 }
 
 model VerificationToken {
@@ -59,4 +63,75 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Classroom {
+    id          String       @id @default(cuid())
+    name        String
+    description String?
+    teacherId   String
+    teacher     User         @relation(fields: [teacherId], references: [id])
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    EnrolledIn  EnrolledIn[]
+    Content     Content[]
+}
+
+model EnrolledIn {
+    id        String    @id @default(cuid())
+    studentId String
+    student   User      @relation(fields: [studentId], references: [id])
+    classId   String
+    classroom Classroom @relation(fields: [classId], references: [id])
+
+    // student   User      @relation(fields: [studentId], references: [id])
+    // classroom Classroom @relation(fields: [classId], references: [id])
+
+    joinedAt DateTime @default(now())
+}
+
+model Content {
+    id          String     @id @default(cuid())
+    title       String
+    description String?
+    url         String
+    fileType    String? // e.g., "pdf", "video", etc.
+    classId     String
+    classroom   Classroom  @relation(fields: [classId], references: [id])
+    uploadedAt  DateTime   @default(now())
+    Test        Test[]
+    Question    Question[]
+}
+
+model Test {
+    id          String    @id @default(cuid())
+    studentId   String
+    contentId   String
+    submittedAt DateTime?
+
+    student User      @relation(fields: [studentId], references: [id])
+    content Content   @relation(fields: [contentId], references: [id])
+    Attempt Attempt[]
+}
+
+model Question {
+    id            String    @id @default(cuid())
+    questionText  String
+    options       String // Array of options (e.g., ["A", "B", "C", "D"])
+    correctOption String // Should match one of the entries in options
+    contentId     String
+    content       Content   @relation(fields: [contentId], references: [id])
+    Attempt       Attempt[]
+}
+
+model Attempt {
+    id             String   @id @default(cuid())
+    testId         String
+    questionId     String
+    selectedOption String
+    isCorrect      Boolean // Automatically marked based on comparison with correctOption
+    attemptedAt    DateTime @default(now())
+
+    test     Test     @relation(fields: [testId], references: [id])
+    question Question @relation(fields: [questionId], references: [id])
 }
