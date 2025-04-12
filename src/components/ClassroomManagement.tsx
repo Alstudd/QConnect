@@ -87,7 +87,6 @@ export default function ClassroomManagementUI() {
 
   return (
     <div className="flex h-screen bg-slate-100 dark:bg-black text-black dark:text-slate-100">
-      {/* Sidebar */}
       <div className="w-64 bg-white dark:bg-black border-r border-slate-200 dark:border-slate-700 flex flex-col">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-xl font-bold">QConnect</h2>
@@ -142,7 +141,6 @@ export default function ClassroomManagementUI() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto p-6">
         {selectedClassroom ? (
           <>
@@ -206,7 +204,58 @@ export default function ClassroomManagementUI() {
   );
 }
 
-// CreateClassroomForm Component
+export async function sendClassroomInvites({
+  classroomId,
+  classroomName,
+  emails,
+  teacherName
+}: {
+  classroomId: string;
+  classroomName: string;
+  emails: string[];
+  teacherName: string;
+}): Promise<boolean> {
+  try {
+    if (!classroomId || !emails.length || !classroomName) {
+      console.error("Missing required parameters for sending invitations");
+      return false;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+    const joinUrl = `${baseUrl}/join/${classroomId}`;
+    
+    const response = await fetch('/api/sendMail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: `Invitation to join ${classroomName}`,
+        message: `You have been invited to join a classroom on QConnect`,
+        emails: emails,
+        classroomName: classroomName,
+        classroomId: classroomId,
+        teacherName: teacherName,
+        joinUrl: joinUrl
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to send invitations: ${errorData.message}`);
+    }
+
+    const data = await response.json();
+    console.log("Invitations sent successfully:", data);
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error sending classroom invitations:", error.message);
+    } else {
+      console.error("Unexpected error sending classroom invitations:", error);
+    }
+    return false;
+  }
+}
+
 function CreateClassroomForm({
   updateClassrooms,
 }: {
@@ -218,29 +267,45 @@ function CreateClassroomForm({
     description: "",
     studentEmails: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    await createClassroom({
-      name: formData.name,
-      teacherId: user?.id!,
-      description: formData.description,
-    });
+    try {
+      const newClassroom = await createClassroom({
+        name: formData.name,
+        teacherId: user?.id!,
+        description: formData.description,
+      });
 
-    await updateClassrooms();
+      await updateClassrooms();
 
-    const emailsArray = formData.studentEmails
-      .split(",")
-      .map((email) => email.trim())
-      .filter((email) => email);
+      const emailsArray = formData.studentEmails
+        .split(",")
+        .map((email) => email.trim())
+        .filter((email) => email && email.includes("@"));
 
-    setFormData({ name: "", description: "", studentEmails: "" });
-    setIsDialogOpen(false);
+      if (emailsArray.length > 0 && newClassroom?.id) {
+        await sendClassroomInvites({
+          classroomId: newClassroom.id,
+          classroomName: formData.name,
+          emails: emailsArray,
+          teacherName: user?.name || "Your teacher",
+        });
+      }
+
+      setFormData({ name: "", description: "", studentEmails: "" });
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating classroom:", error);
+      alert("Failed to create classroom. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  // const handleSubmit
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -314,10 +379,13 @@ function CreateClassroomForm({
               type="button"
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">Create Classroom</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Classroom"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -325,7 +393,6 @@ function CreateClassroomForm({
   );
 }
 
-// ClassroomSidebarItem Component
 function ClassroomSidebarItem({
   classroom,
   isActive,
@@ -348,7 +415,6 @@ function ClassroomSidebarItem({
   );
 }
 
-// Document Card Component
 function DocumentCard({ topic }: { topic: Topic }) {
   return (
     <Card className="overflow-hidden">
@@ -385,7 +451,6 @@ function DocumentCard({ topic }: { topic: Topic }) {
   );
 }
 
-// Add Document Dialog Component
 function AddDocumentDialog({ classId }: { classId: string }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [files, setFiles] = useState<FileList | null>(null);
