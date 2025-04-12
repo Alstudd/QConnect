@@ -18,7 +18,6 @@ import { createUser } from "~/app/api/manageUser";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { Switch } from "./ui/switch";
-import Component from "./comp-234";
 
 export function SignUpForm({
   className,
@@ -43,6 +42,7 @@ export function SignUpForm({
         redirect: false,
         email: formData.email,
         password: formData.password,
+        isTeacher: formData.isTeacher,
       });
       if (res?.status == 200) {
         router.push("/");
@@ -404,7 +404,7 @@ export function SignUpForm({
                     formData.password == ""
                   }
                   type="submit"
-                  className="w-full cursor-pointer bg-white disabled:opacity-50"
+                  className="w-full cursor-pointer disabled:opacity-50"
                 >
                   Sign Up
                   {loading ? <LoadingSpinner /> : <></>}

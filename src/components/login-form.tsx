@@ -104,7 +104,7 @@ export function LoginForm({
                 <Button
                   disabled={formData.email == "" || formData.password == ""}
                   type="submit"
-                  className="w-full cursor-pointer bg-white disabled:opacity-50"
+                  className="w-full cursor-pointer disabled:opacity-50"
                 >
                   Login
                   {loading ? <LoadingSpinner /> : <></>}

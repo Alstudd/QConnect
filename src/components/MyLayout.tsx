@@ -42,13 +42,13 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <nav className="hidden bg-white md:block dark:bg-black">
+      <nav className="hidden bg-white md:block dark:bg-black text-black dark:text-white">
         <div className="z-[30] mx-2 flex flex-wrap items-center justify-between p-2 md:mx-10">
           <a
             href="/"
             className="flex items-center space-x-3 text-black rtl:space-x-reverse dark:text-white"
           >
-            <BrainCircuit />
+            <Brain />
             <div className="py-auto">
               <span
                 className="text-[22px] text-black md:text-[24px] dark:text-white"
