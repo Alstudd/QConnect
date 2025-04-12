@@ -55,6 +55,7 @@ model User {
     Classroom     Classroom[]
     EnrolledIn    EnrolledIn[]
     Test          Test[]
+    QTable        QTable[]
 }
 
 model VerificationToken {
@@ -74,7 +75,7 @@ model Classroom {
     createdAt   DateTime     @default(now())
     updatedAt   DateTime     @updatedAt
     EnrolledIn  EnrolledIn[]
-    Content     Content[]
+    Topic       Topic[]
 }
 
 model EnrolledIn {
@@ -90,27 +91,38 @@ model EnrolledIn {
     joinedAt DateTime @default(now())
 }
 
-model Content {
+model Topic {
     id          String     @id @default(cuid())
     title       String
     description String?
-    url         String
-    fileType    String? // e.g., "pdf", "video", etc.
+    fileType    String?
     classId     String
     classroom   Classroom  @relation(fields: [classId], references: [id])
     uploadedAt  DateTime   @default(now())
     Test        Test[]
     Question    Question[]
+    States      States[]
+    Document    Document[]
+    createdOn   DateTime   @default(now())
+}
+
+model Document {
+    id         String   @id @default(cuid())
+    name       String
+    topicId    String
+    topic      Topic    @relation(fields: [topicId], references: [id])
+    docUrl     String
+    uploadedOn DateTime @default(now())
 }
 
 model Test {
     id          String    @id @default(cuid())
     studentId   String
-    contentId   String
+    topicId     String
     submittedAt DateTime?
 
     student User      @relation(fields: [studentId], references: [id])
-    content Content   @relation(fields: [contentId], references: [id])
+    topic   Topic     @relation(fields: [topicId], references: [id])
     Attempt Attempt[]
 }
 
@@ -119,8 +131,8 @@ model Question {
     questionText  String
     options       String // Array of options (e.g., ["A", "B", "C", "D"])
     correctOption String // Should match one of the entries in options
-    contentId     String
-    content       Content   @relation(fields: [contentId], references: [id])
+    topicId       String
+    topic         Topic     @relation(fields: [topicId], references: [id])
     Attempt       Attempt[]
 }
 
@@ -134,4 +146,24 @@ model Attempt {
 
     test     Test     @relation(fields: [testId], references: [id])
     question Question @relation(fields: [questionId], references: [id])
+}
+
+model States {
+    id      String @id @default(cuid())
+    topicId String
+    topic   Topic  @relation(fields: [topicId], references: [id])
+    name    String
+}
+
+model QTable {
+    id        String   @id @default(uuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
+    state     String
+    action    String
+    qValue    Float
+    nextState String
+    createdAt DateTime @default(now())
+
+    @@unique([userId, state, action]) // Enforce one entry per (user, state, action)
 }

@@ -40,6 +40,9 @@ export async function getTeacherClassrooms(userId: string) {
     where: {
       teacherId: userId,
     },
+    include: {
+      Topic: true,
+    },
   });
   return enrolledClasses;
 }
