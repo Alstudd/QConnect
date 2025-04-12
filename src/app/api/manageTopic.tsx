@@ -58,6 +58,20 @@ export async function addTopic({
   }
 }
 
+export async function getTopicById(topicId: string) {
+  const topic = await db.topic.findUnique({
+    where: {
+      id: topicId,
+    },
+    include: {
+      Document: true,
+      States: true,
+    },
+  });
+
+  return topic;
+}
+
 export async function getTopicByClassroom(topicId) {
   try {
     const topic = await db.topic.findUnique({

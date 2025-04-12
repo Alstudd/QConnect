@@ -124,6 +124,7 @@ model Test {
     student User      @relation(fields: [studentId], references: [id])
     topic   Topic     @relation(fields: [topicId], references: [id])
     Attempt Attempt[]
+    QTable  QTable[]
 }
 
 model Question {
@@ -157,6 +158,8 @@ model States {
 
 model QTable {
     id        String   @id @default(uuid())
+    topicId   String
+    topic     Test     @relation(fields: [topicId], references: [id])
     userId    String
     user      User     @relation(fields: [userId], references: [id])
     state     String
