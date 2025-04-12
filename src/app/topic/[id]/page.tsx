@@ -50,6 +50,7 @@ import {
   Play,
   BarChart,
   ListChecks,
+  Loader2,
 } from "lucide-react";
 import { useUser } from "~/components/AuthComponent";
 import { getTopicById } from "~/app/api/manageTopic";
@@ -106,6 +107,18 @@ export default function TopicPage() {
   const [testFormData, setTestFormData] = useState({ testName: "", testDesc: "", duration: 30 });
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("documents");
+  const [testLoading, setTestLoading] = useState(false);
+
+  const createTest = async () => {
+    setTestLoading(true);
+    try {
+
+    } catch {
+
+    } finally {
+      setTestLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (topicId) {
@@ -207,7 +220,7 @@ export default function TopicPage() {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/classrooms">
+              <BreadcrumbLink className="flex items-center" href="/classrooms">
                 <Home className="h-4 w-4 mr-2" />
                 Classrooms
               </BreadcrumbLink>
@@ -456,9 +469,15 @@ export default function TopicPage() {
                       onOpenChange={setIsCreateTestOpen}
                     >
                       <DialogTrigger asChild>
-                        <Button className="flex items-center">
+                        <Button onClick={createTest} disabled={testLoading} className="flex items-center">
                           <Plus size={16} className="mr-2" />
                           Create Test
+                          <Loader2
+                            className={`ml-2 h-4 w-4 ${
+                              testLoading ? "animate-spin" : "hidden"
+                            }`}
+                            size={16}
+                          />
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-md">

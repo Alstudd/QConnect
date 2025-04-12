@@ -44,7 +44,7 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <nav className="hidden bg-white md:block dark:bg-black text-black dark:text-white">
-        <div className="z-[30] border-b-2 px-2 flex flex-wrap items-center justify-between p-2 md:px-10">
+        <div className="z-20 border-b-2 px-2 flex flex-wrap items-center justify-between p-2 md:px-10">
           <a
             href="/"
             className="flex items-center space-x-3 text-black rtl:space-x-reverse dark:text-white"

@@ -172,7 +172,7 @@ export default function ClassroomPage() {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/classrooms">
+              <BreadcrumbLink className="flex items-center" href="/classrooms">
                 <Home className="h-4 w-4 mr-2" />
                 Classrooms
               </BreadcrumbLink>
