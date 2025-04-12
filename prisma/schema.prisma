@@ -55,6 +55,7 @@ model User {
     Classroom     Classroom[]
     EnrolledIn    EnrolledIn[]
     Test          Test[]
+    QTable        QTable[]
 }
 
 model VerificationToken {
@@ -94,13 +95,15 @@ model Content {
     id          String     @id @default(cuid())
     title       String
     description String?
-    url         String
+    contentUrl  String
+    vectorUrl   String
     fileType    String? // e.g., "pdf", "video", etc.
     classId     String
     classroom   Classroom  @relation(fields: [classId], references: [id])
     uploadedAt  DateTime   @default(now())
     Test        Test[]
     Question    Question[]
+    States      States[]
 }
 
 model Test {
@@ -134,4 +137,24 @@ model Attempt {
 
     test     Test     @relation(fields: [testId], references: [id])
     question Question @relation(fields: [questionId], references: [id])
+}
+
+model States {
+    id        String  @id @default(cuid())
+    contentId String
+    content   Content @relation(fields: [contentId], references: [id])
+    name      String
+}
+
+model QTable {
+    id        String   @id @default(uuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
+    state     String
+    action    String
+    qValue    Float
+    nextState String
+    createdAt DateTime @default(now())
+
+    @@unique([userId, state, action]) // Enforce one entry per (user, state, action)
 }

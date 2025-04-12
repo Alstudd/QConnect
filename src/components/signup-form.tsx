@@ -237,7 +237,7 @@ export function SignUpForm({
                         onCheckedChange={(checked: boolean) => {
                           setFormData((prev) => ({
                             ...prev,
-                            isTeacher: checked,
+                            isTeacher: !checked,
                           }));
                         }}
                         className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2 data-[state=checked]:[&_span]:rtl:-translate-x-2"
@@ -327,7 +327,7 @@ export function SignUpForm({
                           if (checked) {
                             setFormData((prev) => ({
                               ...prev,
-                              isTeacher: true,
+                              isTeacher: checked,
                             }));
                           }
                         }}
