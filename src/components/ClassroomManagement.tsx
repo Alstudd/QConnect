@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -38,126 +38,55 @@ import {
   Brain,
 } from "lucide-react";
 import { useUser } from "./AuthComponent";
-import { createClassroom } from "~/app/api/manageClassroom";
+import {
+  createClassroom,
+  getTeacherClassrooms,
+} from "~/app/api/manageClassroom";
+import type {
+  DocumentCardProps,
+  DocumentFormData,
+  ClassroomSidebarItemProps,
+  CreateClassroomFormProps,
+  AddDocumentDialogProps,
+  ClassroomFormData,
+} from "../../types/classroom";
+import axios from "axios";
+import { createId } from "@paralleldrive/cuid2";
+import type { Topic } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { addTopic } from "~/app/api/manageTopic";
 
-interface Classroom {
-  id: number;
-  name: string;
-  description: string;
-  studentEmails: string[];
-}
-
-interface Document {
-  id: number;
-  classroomId: number;
-  title: string;
-  description: string;
-  fileName: string;
-}
-
-interface ClassroomFormData {
-  name: string;
-  description: string;
-  studentEmails: string;
-}
-
-interface DocumentFormData {
-  title: string;
-  description: string;
-  fileName: string;
-}
-
-interface CreateClassroomFormProps {
-  onSubmit: (data: Omit<Classroom, "id">) => void;
-}
-
-interface ClassroomSidebarItemProps {
-  classroom: Classroom;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-interface DocumentCardProps {
-  document: Document;
-}
-
-interface AddDocumentDialogProps {
-  onSubmit: (data: Omit<Document, "id" | "classroomId">) => void;
-}
+type ClassroomsWithTopic = Prisma.ClassroomGetPayload<{
+  include: { Topic: true };
+}>;
 
 export default function ClassroomManagementUI() {
-  const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(
-    null
-  );
+  const [selectedClassroom, setSelectedClassroom] =
+    useState<ClassroomsWithTopic | null>(null);
   const { user } = useUser();
-  const [classrooms, setClassrooms] = useState<Classroom[]>([
-    {
-      id: 1,
-      name: "Math 101",
-      description: "Introduction to Algebra",
-      studentEmails: ["student1@example.com", "student2@example.com"],
-    },
-    {
-      id: 2,
-      name: "History 202",
-      description: "World History",
-      studentEmails: ["student3@example.com", "student4@example.com"],
-    },
-  ]);
+  const [classrooms, setClassrooms] = useState<ClassroomsWithTopic[]>([]);
+  const [topic, setTopic] = useState<Topic[]>([]);
 
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: 1,
-      classroomId: 1,
-      title: "Algebra Basics",
-      description: "Fundamental concepts of algebra",
-      fileName: "algebra_basics.pdf",
-    },
-    {
-      id: 2,
-      classroomId: 1,
-      title: "Quadratic Equations",
-      description: "How to solve quadratic equations",
-      fileName: "quadratics.pdf",
-    },
-    {
-      id: 3,
-      classroomId: 2,
-      title: "Ancient Civilizations",
-      description: "Overview of early human societies",
-      fileName: "ancient_civs.pdf",
-    },
-  ]);
+  useEffect(() => {
+    getClassrooms();
+  }, [user]);
 
-  const filteredDocuments = selectedClassroom
-    ? documents.filter((doc) => doc.classroomId === selectedClassroom.id)
-    : [];
-
-  const handleCreateClassroom = (data: Omit<Classroom, "id">): void => {
-    const newClassroom: Classroom = {
-      id: classrooms.length + 1,
-      ...data,
-    };
-    setClassrooms([...classrooms, newClassroom]);
-    setSelectedClassroom(newClassroom);
-  };
-
-  const handleCreateDocument = (
-    data: Omit<Document, "id" | "classroomId">
-  ): void => {
-    if (selectedClassroom) {
-      const newDocument: Document = {
-        id: documents.length + 1,
-        classroomId: selectedClassroom.id,
-        ...data,
-      };
-      setDocuments([...documents, newDocument]);
+  const getClassrooms = async () => {
+    if (user) {
+      if (user.isTeacher) {
+        const res = await getTeacherClassrooms(user.id);
+        console.log(res);
+        setClassrooms(res);
+      }
     }
   };
 
+  // const filteredDocuments = selectedClassroom
+  //   ? documents.filter((doc) => doc.classroomId === selectedClassroom.id)
+  //   : [];
+
   return (
     <div className="flex h-screen bg-slate-100 dark:bg-black text-black dark:text-slate-100">
-      {/* Sidebar */}
       <div className="w-64 bg-white dark:bg-black border-r border-slate-200 dark:border-slate-700 flex flex-col">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-xl font-bold">QConnect</h2>
@@ -165,7 +94,7 @@ export default function ClassroomManagementUI() {
 
         {user?.isTeacher && (
           <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-            <CreateClassroomForm onSubmit={handleCreateClassroom} />
+            <CreateClassroomForm updateClassrooms={getClassrooms} />
           </div>
         )}
 
@@ -180,7 +109,9 @@ export default function ClassroomManagementUI() {
                   key={classroom.id}
                   classroom={classroom}
                   isActive={selectedClassroom?.id === classroom.id}
-                  onClick={() => setSelectedClassroom(classroom)}
+                  onClick={() => {
+                    setSelectedClassroom(classroom), setTopic(classroom.Topic);
+                  }}
                 />
               ))}
             </ScrollArea>
@@ -210,7 +141,6 @@ export default function ClassroomManagementUI() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto p-6">
         {selectedClassroom ? (
           <>
@@ -224,16 +154,16 @@ export default function ClassroomManagementUI() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Documents</h2>
               {user?.isTeacher && (
-                <AddDocumentDialog onSubmit={handleCreateDocument} />
+                <AddDocumentDialog classId={selectedClassroom.id} />
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredDocuments.map((document) => (
-                <DocumentCard key={document.id} document={document} />
+              {topic.map((t) => (
+                <DocumentCard key={t.id} topic={t} />
               ))}
 
-              {filteredDocuments.length === 0 && (
+              {topic.length === 0 && (
                 <div className="col-span-full flex justify-center items-center p-12 bg-slate-100 dark:bg-black rounded-lg">
                   <div className="text-center">
                     <Book
@@ -247,7 +177,7 @@ export default function ClassroomManagementUI() {
                         : "Your teacher hasn't uploaded any documents yet"}
                     </p>
                     {user?.isTeacher && (
-                      <AddDocumentDialog onSubmit={handleCreateDocument} />
+                      <AddDocumentDialog classId={selectedClassroom.id} />
                     )}
                   </div>
                 </div>
@@ -274,38 +204,107 @@ export default function ClassroomManagementUI() {
   );
 }
 
-// CreateClassroomForm Component
-function CreateClassroomForm({ onSubmit }: CreateClassroomFormProps) {
+export async function sendClassroomInvites({
+  classroomId,
+  classroomName,
+  emails,
+  teacherName
+}: {
+  classroomId: string;
+  classroomName: string;
+  emails: string[];
+  teacherName: string;
+}): Promise<boolean> {
+  try {
+    if (!classroomId || !emails.length || !classroomName) {
+      console.error("Missing required parameters for sending invitations");
+      return false;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+    const joinUrl = `${baseUrl}/join/${classroomId}`;
+    
+    const response = await fetch('/api/sendMail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: `Invitation to join ${classroomName}`,
+        message: `You have been invited to join a classroom on QConnect`,
+        emails: emails,
+        classroomName: classroomName,
+        classroomId: classroomId,
+        teacherName: teacherName,
+        joinUrl: joinUrl
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to send invitations: ${errorData.message}`);
+    }
+
+    const data = await response.json();
+    console.log("Invitations sent successfully:", data);
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error sending classroom invitations:", error.message);
+    } else {
+      console.error("Unexpected error sending classroom invitations:", error);
+    }
+    return false;
+  }
+}
+
+function CreateClassroomForm({
+  updateClassrooms,
+}: {
+  updateClassrooms: VoidFunction;
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<ClassroomFormData>({
     name: "",
     description: "",
     studentEmails: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    await createClassroom({
-      name: formData.name,
-      teacherId: user?.id!,
-      description: formData.description,
-    });
+    try {
+      const newClassroom = await createClassroom({
+        name: formData.name,
+        teacherId: user?.id!,
+        description: formData.description,
+      });
 
-    const emailsArray = formData.studentEmails
-      .split(",")
-      .map((email) => email.trim())
-      .filter((email) => email);
+      await updateClassrooms();
 
-    onSubmit({
-      name: formData.name,
-      description: formData.description,
-      studentEmails: emailsArray,
-    });
+      const emailsArray = formData.studentEmails
+        .split(",")
+        .map((email) => email.trim())
+        .filter((email) => email && email.includes("@"));
 
-    setFormData({ name: "", description: "", studentEmails: "" });
-    setIsDialogOpen(false);
+      if (emailsArray.length > 0 && newClassroom?.id) {
+        await sendClassroomInvites({
+          classroomId: newClassroom.id,
+          classroomName: formData.name,
+          emails: emailsArray,
+          teacherName: user?.name || "Your teacher",
+        });
+      }
+
+      setFormData({ name: "", description: "", studentEmails: "" });
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating classroom:", error);
+      alert("Failed to create classroom. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -380,10 +379,13 @@ function CreateClassroomForm({ onSubmit }: CreateClassroomFormProps) {
               type="button"
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">Create Classroom</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Classroom"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -391,7 +393,6 @@ function CreateClassroomForm({ onSubmit }: CreateClassroomFormProps) {
   );
 }
 
-// ClassroomSidebarItem Component
 function ClassroomSidebarItem({
   classroom,
   isActive,
@@ -414,18 +415,17 @@ function ClassroomSidebarItem({
   );
 }
 
-// Document Card Component
-function DocumentCard({ document }: DocumentCardProps) {
+function DocumentCard({ topic }: { topic: Topic }) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-1">
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-md font-semibold truncate">
-              {document.title}
+              {topic.title}
             </CardTitle>
             <CardDescription className="truncate">
-              {document.description}
+              {topic.description}
             </CardDescription>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -436,7 +436,7 @@ function DocumentCard({ document }: DocumentCardProps) {
       <CardContent>
         <Card className="flex flex-row p-3 items-center text-sm text-slate-500">
           <File size={14} className="ml-1" />
-          <span className="truncate">{document.fileName}</span>
+          <span className="truncate">file</span>
         </Card>
       </CardContent>
       <CardFooter className="pt-0 flex justify-between">
@@ -451,36 +451,53 @@ function DocumentCard({ document }: DocumentCardProps) {
   );
 }
 
-// Add Document Dialog Component
-function AddDocumentDialog({ onSubmit }: AddDocumentDialogProps) {
+function AddDocumentDialog({ classId }: { classId: string }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [formData, setFormData] = useState<DocumentFormData>({
-    title: "",
-    description: "",
-    fileName: "No file selected",
-  });
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState({ topicName: "", topicDesc: "" });
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({ title: "", description: "", fileName: "No file selected" });
-    setIsOpen(false);
-  };
+    const id = createId();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e: any): void => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({
-        ...prev,
-        fileName: e.target.files[0].name,
-      }));
+    if (!files) {
+      alert("Please provide both files and an ID.");
+      return;
     }
+
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append("files", file));
+    formData.append("id", id);
+    const fileNames = Array.from(files).map((file) => file.name);
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        "http://127.0.0.1:8000/upload/",
+        formData
+      );
+
+      if (response) {
+        console.log(response.data);
+        await addTopic({
+          id: id,
+          title: data.topicName,
+          description: data.topicDesc,
+          fileType: "pdf",
+          files: fileNames,
+          states: response.data,
+          classId: classId,
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      alert("Upload failed: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+
+    setIsOpen(false);
   };
 
   return (
@@ -510,14 +527,17 @@ function AddDocumentDialog({ onSubmit }: AddDocumentDialogProps) {
                   id="file"
                   className="hidden"
                   accept=".pdf"
-                  onChange={handleFileChange}
+                  onChange={(e) => {
+                    setFiles(e.target.files);
+                  }}
+                  multiple
                 />
                 <label htmlFor="file" className="cursor-pointer text-center">
                   <Upload size={24} className="mx-auto mb-2 text-slate-400" />
                   <p className="text-sm font-medium text-slate-900 mb-1">
                     Click to upload PDF
                   </p>
-                  <p className="text-xs text-slate-500">{formData.fileName}</p>
+                  <p className="text-xs text-slate-500">{data.topicName}</p>
                 </label>
               </div>
             </div>
@@ -528,8 +548,10 @@ function AddDocumentDialog({ onSubmit }: AddDocumentDialogProps) {
               <Input
                 id="title"
                 name="title"
-                value={formData.title}
-                onChange={handleChange}
+                value={data.topicName}
+                onChange={(e) => {
+                  setData((prev) => ({ ...prev, topicName: e.target.value }));
+                }}
                 placeholder="e.g., Chapter 1 Notes"
                 required
               />
@@ -541,8 +563,10 @@ function AddDocumentDialog({ onSubmit }: AddDocumentDialogProps) {
               <Textarea
                 id="doc-description"
                 name="description"
-                value={formData.description}
-                onChange={handleChange}
+                value={data.topicDesc}
+                onChange={(e) => {
+                  setData((prev) => ({ ...prev, topicDesc: e.target.value }));
+                }}
                 placeholder="Brief description of the document"
                 rows={3}
               />
