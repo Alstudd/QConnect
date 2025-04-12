@@ -1,5 +1,7 @@
 "use client";
 import {
+  Brain,
+  BrainCircuit,
   CalendarFold,
   Home,
   PackageOpen,
@@ -32,7 +34,7 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [links, setLinks] = useState([
     { title: "Home", href: "/", icon: <Home /> },
-    { title: "Dashboard", href: "/dashboard", icon: <PackageOpen /> },
+    { title: "Classrooms", href: "/classrooms", icon: <PackageOpen /> },
     { title: "Page", href: "/page", icon: <User2 /> },
     { title: "Hello", href: "/hello", icon: <CalendarFold /> },
   ]);
@@ -46,13 +48,13 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
             href="/"
             className="flex items-center space-x-3 text-black rtl:space-x-reverse dark:text-white"
           >
-            <Home />
+            <BrainCircuit />
             <div className="py-auto">
               <span
                 className="text-[22px] text-black md:text-[24px] dark:text-white"
                 style={{ lineHeight: "32px", fontWeight: "600" }}
               >
-                Test
+                QConnect
               </span>
             </div>
           </a>
@@ -87,9 +89,9 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <div className="my-auto block rounded text-black hover:text-black md:border-0 md:p-0 md:hover:bg-transparent dark:text-white dark:hover:text-gray-400">
-                          {user.photoURL ? (
+                          {user.image ? (
                             <Image
-                              src={user.photoURL}
+                              src={user.image}
                               height={35}
                               width={35}
                               className="border-0.5 rounded-full border-black shadow shadow-black dark:border-white dark:shadow-white"
@@ -149,13 +151,13 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
                     href="/"
                     className="flex items-center space-x-3 text-black rtl:space-x-reverse dark:text-white"
                   >
-                    <Home />
+                    <Brain />
                     <div className="py-auto">
                       <span
                         className="text-[22px] text-black md:text-[24px] dark:text-white"
                         style={{ lineHeight: "32px", fontWeight: "600" }}
                       >
-                        Test
+                        QConnect
                       </span>
                     </div>
                   </a>
@@ -172,8 +174,8 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
                     className="group bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold md:text-base"
                     prefetch={false}
                   >
-                    <Home className="h-5 w-5 transition-all group-hover:scale-110" />
-                    <span className="sr-only">Test</span>
+                    <Brain className="h-5 w-5 transition-all group-hover:scale-110" />
+                    <span className="sr-only">QConnect</span>
                   </Link>
                   {links.map((link) => (
                     <Link
@@ -190,10 +192,10 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <div className="my-auto block rounded text-black hover:text-black md:border-0 md:p-0 md:hover:bg-transparent dark:text-white dark:hover:text-gray-400">
-                          {user.photoURL ? (
+                          {user.image ? (
                             <div className="text-muted-foreground hover:text-foreground flex items-center gap-4 border-t border-black/60 px-2.5 pt-5 dark:border-white/60">
                               <Image
-                                src={user.photoURL}
+                                src={user.image}
                                 height={35}
                                 width={35}
                                 className="border-0.5 rounded-full border-black shadow shadow-black dark:border-white dark:shadow-white"
