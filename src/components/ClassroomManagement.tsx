@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -37,6 +37,7 @@ import {
   LogOut,
   Brain,
 } from "lucide-react";
+import { useUser } from "./AuthComponent";
 
 interface Classroom {
   id: number;
@@ -87,6 +88,7 @@ export default function ClassroomManagementUI() {
   const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(
     null
   );
+  const { user } = useUser();
   const [classrooms, setClassrooms] = useState<Classroom[]>([
     {
       id: 1,
@@ -161,9 +163,13 @@ export default function ClassroomManagementUI() {
           <h2 className="text-xl font-bold text-slate-800">QConnect</h2>
         </div>
 
-        <div className="p-4 border-b border-slate-200">
-          <CreateClassroomForm onSubmit={handleCreateClassroom} />
-        </div>
+        {user?.isTeacher ? (
+          <div className="p-4 border-b border-slate-200">
+            <CreateClassroomForm onSubmit={handleCreateClassroom} />
+          </div>
+        ) : (
+          ""
+        )}
 
         <div className="flex-1 overflow-auto">
           <div className="p-4">
@@ -221,7 +227,11 @@ export default function ClassroomManagementUI() {
               <h2 className="text-lg font-semibold text-slate-700">
                 Documents
               </h2>
-              <AddDocumentDialog onSubmit={handleCreateDocument} />
+              {user?.isTeacher ? (
+                <AddDocumentDialog onSubmit={handleCreateDocument} />
+              ) : (
+                ""
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -236,10 +246,20 @@ export default function ClassroomManagementUI() {
                     <h3 className="text-slate-600 font-medium mb-2">
                       No documents yet
                     </h3>
-                    <p className="text-slate-500 mb-4">
-                      Upload your first document to get started
-                    </p>
-                    <AddDocumentDialog onSubmit={handleCreateDocument} />
+                    {user?.isTeacher ? (
+                      <p className="text-slate-500 mb-4">
+                        Upload a document to get started
+                      </p>
+                    ) : (
+                      <p className="text-slate-500 mb-4">
+                        Your teacher hasn't uploaded any documents yet
+                      </p>
+                    )}
+                    {user?.isTeacher ? (
+                      <AddDocumentDialog onSubmit={handleCreateDocument} />
+                    ) : (
+                      ""
+                    )}
                   </div>
                 </div>
               )}
@@ -252,9 +272,15 @@ export default function ClassroomManagementUI() {
               <h2 className="text-xl font-semibold text-slate-700 mb-2">
                 Welcome to QConnect
               </h2>
-              <p className="text-slate-500 mb-4">
-                Select a classroom or create a new one to get started
-              </p>
+              {user?.isTeacher ? (
+                <p className="text-slate-500 mb-4">
+                  Select a classroom or create a new one to get started
+                </p>
+              ) : (
+                <p className="text-slate-500 mb-4">
+                  Select a classroom to get started
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -395,24 +421,26 @@ function ClassroomSidebarItem({
 function DocumentCard({ document }: DocumentCardProps) {
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-1">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-md font-semibold truncate">
-            {document.title}
-          </CardTitle>
+          <div>
+            <CardTitle className="text-md font-semibold truncate">
+              {document.title}
+            </CardTitle>
+            <CardDescription className="truncate">
+              {document.description}
+            </CardDescription>
+          </div>
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <MoreVertical size={16} />
           </Button>
         </div>
-        <CardDescription className="truncate">
-          {document.description}
-        </CardDescription>
       </CardHeader>
-      <CardContent className="pb-3">
-        <div className="flex items-center text-sm text-slate-500">
-          <File size={14} className="mr-1" />
+      <CardContent>
+        <Card className="flex flex-row p-3 items-center text-sm text-slate-500">
+          <File size={14} className="ml-1" />
           <span className="truncate">{document.fileName}</span>
-        </div>
+        </Card>
       </CardContent>
       <CardFooter className="pt-0 flex justify-between">
         <Button variant="outline" size="sm">
