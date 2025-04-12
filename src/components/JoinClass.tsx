@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 export const JoinClass = ({ classId }: { classId: string }) => {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
     const enroll = async () => {
       if (user?.id && classId) {
@@ -18,6 +20,7 @@ export const JoinClass = ({ classId }: { classId: string }) => {
             classId,
             studentId: user.id,
           });
+          router.push(`/classroom/${classId}`);
         } catch (e) {
           console.log(e);
         }
