@@ -40,6 +40,7 @@ import {
 import { useUser } from "./AuthComponent";
 import {
   createClassroom,
+  getStudentClassrooms,
   getTeacherClassrooms,
 } from "~/app/api/manageClassroom";
 import type {
@@ -55,6 +56,7 @@ import { createId } from "@paralleldrive/cuid2";
 import type { Topic } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { addTopic } from "~/app/api/manageTopic";
+import Link from "next/link";
 
 type ClassroomsWithTopic = Prisma.ClassroomGetPayload<{
   include: { Topic: true };
@@ -77,6 +79,10 @@ export default function ClassroomManagementUI() {
         const res = await getTeacherClassrooms(user.id);
         console.log(res);
         setClassrooms(res);
+      } else {
+        const res: any = await getStudentClassrooms(user.id);
+        console.log(res);
+        setClassrooms(res);
       }
     }
   };
@@ -89,7 +95,7 @@ export default function ClassroomManagementUI() {
     <div className="flex h-screen bg-slate-100 dark:bg-black text-black dark:text-slate-100">
       <div className="w-64 bg-white dark:bg-black border-r border-slate-200 dark:border-slate-700 flex flex-col">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-bold">QConnect</h2>
+          <h2 className="text-xl font-bold">{user?.isTeacher ? "Create" : "View"}</h2>
         </div>
 
         {user?.isTeacher && (
@@ -151,17 +157,7 @@ export default function ClassroomManagementUI() {
               </p>
             </div>
 
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Documents</h2>
-              {user?.isTeacher && (
-                <AddDocumentDialog classId={selectedClassroom.id} />
-              )}
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {topic.map((t) => (
-                <DocumentCard key={t.id} topic={t} />
-              ))}
 
               {topic.length === 0 && (
                 <div className="col-span-full flex justify-center items-center p-12 bg-slate-100 dark:bg-black rounded-lg">
@@ -176,9 +172,6 @@ export default function ClassroomManagementUI() {
                         ? "Upload a document to get started"
                         : "Your teacher hasn't uploaded any documents yet"}
                     </p>
-                    {user?.isTeacher && (
-                      <AddDocumentDialog classId={selectedClassroom.id} />
-                    )}
                   </div>
                 </div>
               )}
@@ -317,7 +310,7 @@ function CreateClassroomForm({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full" size="sm">
+        <Button className="cursor-pointer w-full" size="sm">
           <Plus size={16} className="mr-2" />
           New Classroom
         </Button>
@@ -399,191 +392,20 @@ function ClassroomSidebarItem({
   onClick,
 }: ClassroomSidebarItemProps) {
   return (
+    <Link href={`/classroom/${classroom.id}`}>
     <Button
       variant={isActive ? "secondary" : "ghost"}
-      className={`w-full justify-start mb-1 ${
+      className={`cursor-pointer w-full justify-start mb-1 ${
         isActive
           ? "bg-slate-100 text-black dark:bg-slate-800 dark:text-white"
           : ""
       }`}
-      onClick={onClick}
     >
       <Book size={16} className="mr-2" />
       <span className="truncate">{classroom.name}</span>
       {isActive && <ChevronRight size={16} className="ml-auto" />}
     </Button>
+    </Link>
   );
 }
 
-function DocumentCard({ topic }: { topic: Topic }) {
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-1">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-md font-semibold truncate">
-              {topic.title}
-            </CardTitle>
-            <CardDescription className="truncate">
-              {topic.description}
-            </CardDescription>
-          </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical size={16} />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Card className="flex flex-row p-3 items-center text-sm text-slate-500">
-          <File size={14} className="ml-1" />
-          <span className="truncate">file</span>
-        </Card>
-      </CardContent>
-      <CardFooter className="pt-0 flex justify-between">
-        <Button variant="outline" size="sm">
-          View
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
-          <Trash2 size={16} />
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
-
-function AddDocumentDialog({ classId }: { classId: string }) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [files, setFiles] = useState<FileList | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({ topicName: "", topicDesc: "" });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const id = createId();
-
-    if (!files) {
-      alert("Please provide both files and an ID.");
-      return;
-    }
-
-    const formData = new FormData();
-    Array.from(files).forEach((file) => formData.append("files", file));
-    formData.append("id", id);
-    const fileNames = Array.from(files).map((file) => file.name);
-
-    try {
-      setLoading(true);
-      const response = await axios.post(
-        "http://127.0.0.1:8000/upload/",
-        formData
-      );
-
-      if (response) {
-        console.log(response.data);
-        await addTopic({
-          id: id,
-          title: data.topicName,
-          description: data.topicDesc,
-          fileType: "pdf",
-          files: fileNames,
-          states: response.data,
-          classId: classId,
-        });
-      }
-    } catch (error: any) {
-      console.error(error);
-      alert("Upload failed: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-
-    setIsOpen(false);
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus size={16} className="mr-2" />
-          Add Document
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Upload Document</DialogTitle>
-          <DialogDescription>
-            Add a new document to this classroom.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="file" className="text-sm font-medium">
-                Upload PDF
-              </label>
-              <div className="flex items-center justify-center border-2 border-dashed border-slate-200 rounded-lg p-6 cursor-pointer hover:bg-slate-50 transition">
-                <input
-                  type="file"
-                  id="file"
-                  className="hidden"
-                  accept=".pdf"
-                  onChange={(e) => {
-                    setFiles(e.target.files);
-                  }}
-                  multiple
-                />
-                <label htmlFor="file" className="cursor-pointer text-center">
-                  <Upload size={24} className="mx-auto mb-2 text-slate-400" />
-                  <p className="text-sm font-medium text-slate-900 mb-1">
-                    Click to upload PDF
-                  </p>
-                  <p className="text-xs text-slate-500">{data.topicName}</p>
-                </label>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Document Title
-              </label>
-              <Input
-                id="title"
-                name="title"
-                value={data.topicName}
-                onChange={(e) => {
-                  setData((prev) => ({ ...prev, topicName: e.target.value }));
-                }}
-                placeholder="e.g., Chapter 1 Notes"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="doc-description" className="text-sm font-medium">
-                Description
-              </label>
-              <Textarea
-                id="doc-description"
-                name="description"
-                value={data.topicDesc}
-                onChange={(e) => {
-                  setData((prev) => ({ ...prev, topicDesc: e.target.value }));
-                }}
-                placeholder="Brief description of the document"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Upload Document</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}

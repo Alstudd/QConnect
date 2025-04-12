@@ -53,7 +53,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useUser } from "~/components/AuthComponent";
-import { getTopicById } from "~/app/api/manageTopic";
+import { getTopicByClassroom, getTopicById } from "~/app/api/manageTopic";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -108,6 +108,8 @@ export default function TopicPage() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("documents");
   const [testLoading, setTestLoading] = useState(false);
+  const [classroomId, setClassroomId] = useState<any>(null);
+  const [classroomName, setClassroomName] = useState<any>(null);
 
   const createTest = async () => {
     setTestLoading(true);
@@ -123,6 +125,12 @@ export default function TopicPage() {
   useEffect(() => {
     if (topicId) {
       fetchTopicData();
+      const func = async () => {
+        const topicByClassroom = await getTopicByClassroom(topicId);
+        setClassroomId(topicByClassroom.classroom.id);
+        setClassroomName(topicByClassroom.classroom.name);
+      }
+      func()
     }
   }, [topicId]);
 
@@ -195,7 +203,7 @@ export default function TopicPage() {
   };
 
   const navigateToClassroom = (classroomId: string) => {
-    router.push(`/classrooms/${classroomId}`);
+    router.push(`/classroom/${classroomId}`);
   };
 
   if (!topic) {
@@ -211,8 +219,8 @@ export default function TopicPage() {
   }
 
   // Safely check if classroom exists before accessing its properties
-  const classroomId = topic.classroom?.id || '';
-  const classroomName = topic.classroom?.name || 'Classroom';
+  // const classroomId = topic.classroom?.id || '';
+  // const classroomName = topic.classroom?.name || 'Classroom';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-black dark:text-slate-100">
@@ -227,7 +235,7 @@ export default function TopicPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/classrooms/${classroomId}`}>
+              <BreadcrumbLink href={`/classroom/${classroomId}`}>
                 {classroomName}
               </BreadcrumbLink>
             </BreadcrumbItem>
