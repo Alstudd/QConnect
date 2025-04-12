@@ -19,7 +19,7 @@ export async function enrollStudent({
     });
 
     if (isAlreadyEnrolled) {
-      throw new Error("Student is already enrolled in this class.");
+      return isAlreadyEnrolled;
     }
 
     const enrollment = await db.enrolledIn.create({
