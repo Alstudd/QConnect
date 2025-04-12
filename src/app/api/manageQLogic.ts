@@ -1,131 +1,138 @@
 "use server";
 import { db } from "~/server/db";
-import type { State, Action } from "types/ql";
 
-const actions: Action[] = [
-  "increase_difficulty",
-  "decrease_difficulty",
-  "stay_same",
+const actions = [
+  "Ask Basic MCQ",
+  "Ask Conceptual MCQ",
+  "Next Topic",
+  "Previous Topic",
 ];
 
-const topics = ["addition", "subtraction"] as const;
-
-const difficulties = ["easy", "medium", "hard"] as const;
+const difficulties = ["basic", "conceptual"] as const;
 
 const alpha = 0.1; // Learning rate
 const gamma = 0.9; // Discount factor
 
-async function getDynamicEpsilon(userId: string): Promise<number> {
-  const totalEntries = topics.length * actions.length * difficulties.length;
-  const userEntries = await db.qTable.count({ where: { userId } });
-
-  const fillPercentage = userEntries / totalEntries;
-
-  return Math.max(0.2, 1 - fillPercentage);
-}
-
 function getReward(
   isCorrect: boolean,
-  difficulty: (typeof difficulties)[number],
+  type: string,
   timeTaken: number
-) {
-  // Base rewards and penalties
-  const baseReward =
-    difficulty === "easy" ? 5 : difficulty === "medium" ? 10 : 15;
-  const basePenalty =
-    difficulty === "easy" ? -1 : difficulty === "medium" ? -2 : -3;
+): number {
+  const baseReward = type === "basic" ? 5 : 10;
+  const basePenalty = type === "basic" ? -1 : -3;
 
-  // Time thresholds per difficulty
-  const timeThreshold =
-    difficulty === "easy" ? 5 : difficulty === "medium" ? 10 : 15;
+  const timeThreshold = type === "basic" ? 5 : 10;
 
   if (isCorrect) {
     if (timeTaken <= timeThreshold) return baseReward;
-    return Math.max(baseReward - (timeTaken - timeThreshold) * 0.5, 0);
+    return Math.max(baseReward - (timeTaken - timeThreshold) * 0.5, 1);
   } else {
-    return basePenalty - (timeTaken > timeThreshold * 1.5 ? 1 : 0);
+    const penalty = basePenalty - (timeTaken > timeThreshold * 1.5 ? 1 : 0);
+    return penalty;
   }
 }
 
-function getRandomAction(): Action {
-  return actions[Math.floor(Math.random() * actions.length)] as Action;
+function getRandomAction(): string {
+  return actions[Math.floor(Math.random() * actions.length)] as string;
 }
 
-function getRandomState(): State {
-  return `${topics[Math.floor(Math.random() * topics.length)]}-${
-    difficulties[Math.floor(Math.random() * difficulties.length)]
-  }` as State;
-}
-
-async function selectAction(userId: string, state: State): Promise<Action> {
-  const maxQValueEntry = await db.qTable.findFirst({
-    where: { id: userId, state: state },
-    orderBy: { qValue: "desc" },
+async function getRandomState(topicId: string): Promise<string> {
+  const res = await db.states.findMany({
+    where: {
+      topicId: topicId,
+    },
   });
 
-  const epsilon = await getDynamicEpsilon(userId);
+  const topics = res.map((t) => {
+    return t.name;
+  });
+
+  return `${topics[Math.floor(Math.random() * topics.length)]}-${
+    difficulties[Math.floor(Math.random() * difficulties.length)]
+  }` as string;
+}
+
+async function selectAction(
+  userId: string,
+  topicId: string,
+  state: string
+): Promise<string> {
+  const maxQValueEntry = await db.qTable.findFirst({
+    where: {
+      userId: userId,
+      topicId: topicId,
+      state: state,
+    },
+    orderBy: {
+      qValue: "desc",
+    },
+  });
+
+  // const epsilon = await getDynamicEpsilon(userId, topicId);
+  const epsilon = 0.2;
 
   const chosenAction =
     Math.random() < epsilon || !maxQValueEntry
       ? getRandomAction()
-      : (maxQValueEntry.action as Action);
+      : (maxQValueEntry.action as string);
 
   return chosenAction;
 }
 
-function getNextState(state: State, action: Action): State {
-  if (action == "stay_same") {
-    return state;
+async function getNextState(
+  state: string,
+  action: string,
+  topicId: string
+): Promise<string> {
+  const [topic, type] = state.split("-");
+  let newType;
+
+  const res = await db.states.findMany({
+    where: {
+      topicId: topicId,
+    },
+  });
+
+  const topics = res.map((t) => {
+    return t.name;
+  });
+  let topicIndex = topics.indexOf(topic!);
+
+  if (action === "Ask Basic MCQ") {
+    newType = "basic";
+  } else if (action === "Ask Conceptual MCQ") {
+    newType = "conceptual";
+  } else if (action === "Next Topic") {
+    topicIndex = (topicIndex + 1) % topics.length;
+  } else if (action === "Previous Topic") {
+    topicIndex = (topicIndex - 1 + topics.length) % topics.length;
   }
 
-  const [topic, difficulty] = state.split("-") as [string, string];
-
-  const topicIndex = topics.indexOf(topic as any);
-  const difficultyIndex = difficulties.indexOf(difficulty as any);
-
-  let newTopic: (typeof topics)[number] =
-    topicIndex !== -1 ? topics[topicIndex]! : "addition";
-
-  let newDifficulty: (typeof difficulties)[number] =
-    difficultyIndex !== -1 ? difficulties[difficultyIndex]! : "easy";
-
-  if (difficultyIndex !== -1) {
-    if (action === "increase_difficulty") {
-      newDifficulty =
-        difficulties[Math.min(difficultyIndex + 1, difficulties.length - 1)]!;
-    } else if (action === "decrease_difficulty") {
-      newDifficulty = difficulties[Math.max(difficultyIndex - 1, 0)]!;
-    } else if (action === "change_topic") {
-      newTopic = topics[(topicIndex + 1) % topics.length]!;
-    }
-  } else {
-    newTopic = "addition";
-    newDifficulty = "easy";
-  }
-
-  return `${newTopic}-${newDifficulty}` as State;
+  return `${topics[topicIndex]}-${newType}`;
 }
 
 export async function getQuestion(
   userId: string,
-  state?: State,
-  action?: Action
-): Promise<{ state: State; action?: Action }> {
+  topicId: string,
+  state?: string,
+  action?: string
+): Promise<{ state: string; action?: string }> {
   if (state) {
-    const a = await selectAction(userId, state);
-    const nextState = getNextState(state, a);
+    const a = await selectAction(userId, topicId, state);
+    const nextState = await getNextState(state, a, topicId);
     return { state: nextState, action: a };
   } else {
-    const nextState = getRandomState();
+    const nextState = await getRandomState(topicId);
     return { state: nextState };
   }
 }
 
 export async function updateQValue(
   userId: string,
-  prevState: State,
-  action: Action,
-  currentState: State,
+  topicId: string,
+  prevState: string,
+  action: string,
+  currentState: string,
   isCorrect: boolean,
   timeTaken: number
 ) {
@@ -175,6 +182,7 @@ export async function updateQValue(
     },
     create: {
       userId,
+      topicId,
       state: prevState,
       action: action,
       qValue: newQ,
