@@ -18,6 +18,7 @@ import { createUser } from "~/app/api/manageUser";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { Switch } from "./ui/switch";
+import Component from "./comp-234";
 
 export function SignUpForm({
   className,
@@ -379,7 +380,6 @@ export function SignUpForm({
                     </div>
                   </div>
                 </div>
-
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
