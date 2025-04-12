@@ -42,7 +42,6 @@ export function SignUpForm({
         redirect: false,
         email: formData.email,
         password: formData.password,
-        isTeacher: formData.isTeacher,
       });
       if (res?.status == 200) {
         router.push("/");
@@ -235,13 +234,11 @@ export function SignUpForm({
                     >
                       <Switch
                         checked={!formData.isTeacher}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setFormData((prev) => ({
-                              ...prev,
-                              isTeacher: false,
-                            }));
-                          }
+                        onCheckedChange={(checked: boolean) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            isTeacher: checked,
+                          }));
                         }}
                         className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2 data-[state=checked]:[&_span]:rtl:-translate-x-2"
                         aria-describedby="student-description"
