@@ -21,7 +21,7 @@ export async function createClassroom({
   return newClassroom;
 }
 
-async function getStudentClassrooms(userId: string) {
+export async function getStudentClassrooms(userId: string) {
   const enrolledClasses = await db.enrolledIn.findMany({
     where: {
       studentId: userId,
@@ -33,4 +33,13 @@ async function getStudentClassrooms(userId: string) {
 
   const studentClassrooms = enrolledClasses.map((entry) => entry.classroom);
   return studentClassrooms;
+}
+
+export async function getTeacherClassrooms(userId: string) {
+  const enrolledClasses = await db.classroom.findMany({
+    where: {
+      teacherId: userId,
+    },
+  });
+  return enrolledClasses;
 }

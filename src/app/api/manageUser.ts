@@ -16,10 +16,12 @@ export async function getUser(email: string) {
 export async function createUser({
   name,
   email,
+  isTeacher,
   password,
 }: {
   name: string;
   email: string;
+  isTeacher: boolean;
   password: string;
 }) {
   const salt = bcrypt.genSaltSync(10);
@@ -29,6 +31,7 @@ export async function createUser({
     data: {
       name: name,
       email: email,
+      isTeacher: isTeacher,
       password: hash,
     },
   });
