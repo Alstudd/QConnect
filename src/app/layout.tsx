@@ -10,7 +10,7 @@ import MyLayout from "~/components/MyLayout";
 import { ThemeProvider } from "~/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "The Brielle App | Home",
+  title: "QConnect | Home",
   description: "Give a Desc",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
