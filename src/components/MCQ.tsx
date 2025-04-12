@@ -31,12 +31,105 @@ import {
 } from "./ui/alert-dialog";
 
 const MCQ = () => {
-  const [currentQuestion, setCurrentQuestion] = useState();
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [nextQuestionLoading, setNextQuestionLoading] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  interface Question {
+    id: string;
+    questionText: string;
+    options: string[];
+    correctOption: string;
+  }
+
+  const dummyQuestions: Question[] = [
+    {
+      id: "q1",
+      questionText: "What is the capital of France?",
+      options: ["London", "Berlin", "Paris", "Madrid"],
+      correctOption: "Paris",
+    },
+    {
+      id: "q2",
+      questionText: "Which planet is known as the Red Planet?",
+      options: ["Earth", "Mars", "Jupiter", "Venus"],
+      correctOption: "Mars",
+    },
+    {
+      id: "q3",
+      questionText: "What is the largest mammal on Earth?",
+      options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+      correctOption: "Blue Whale",
+    },
+    {
+      id: "q4",
+      questionText: "Who wrote 'Romeo and Juliet'?",
+      options: [
+        "Charles Dickens",
+        "Jane Austen",
+        "William Shakespeare",
+        "Mark Twain",
+      ],
+      correctOption: "William Shakespeare",
+    },
+    {
+      id: "q5",
+      questionText: "What is the chemical symbol for gold?",
+      options: ["Go", "Gd", "Au", "Ag"],
+      correctOption: "Au",
+    },
+    {
+      id: "q6",
+      questionText: "Which country is home to the Great Barrier Reef?",
+      options: ["Brazil", "United States", "Australia", "Thailand"],
+      correctOption: "Australia",
+    },
+    {
+      id: "q7",
+      questionText: "How many continents are there on Earth?",
+      options: ["5", "6", "7", "8"],
+      correctOption: "7",
+    },
+    {
+      id: "q8",
+      questionText: "What is the largest organ in the human body?",
+      options: ["Heart", "Liver", "Skin", "Brain"],
+      correctOption: "Skin",
+    },
+    {
+      id: "q9",
+      questionText: "Which gas do plants absorb from the atmosphere?",
+      options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+      correctOption: "Carbon Dioxide",
+    },
+    {
+      id: "q10",
+      questionText: "What is the tallest mountain in the world?",
+      options: ["K2", "Mont Blanc", "Mount Everest", "Kilimanjaro"],
+      correctOption: "Mount Everest",
+    },
+    {
+      id: "q11",
+      questionText: "Who painted the Mona Lisa?",
+      options: [
+        "Pablo Picasso",
+        "Vincent van Gogh",
+        "Leonardo da Vinci",
+        "Michelangelo",
+      ],
+      correctOption: "Leonardo da Vinci",
+    },
+    {
+      id: "q12",
+      questionText: "What is the hardest natural substance on Earth?",
+      options: ["Titanium", "Diamond", "Steel", "Quartz"],
+      correctOption: "Diamond",
+    },
+  ];
+
+  const currentQuestion = dummyQuestions[0];
 
   const handleOptionSelect = async (option: string) => {
     if (selectedOption !== null || nextQuestionLoading) return;
