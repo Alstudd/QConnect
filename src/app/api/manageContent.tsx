@@ -33,3 +33,21 @@ export async function addContent({
     throw new Error("Failed to add content");
   }
 }
+
+export async function getClassroomContent(classId: string) {
+  try {
+    const contentList = await db.content.findMany({
+      where: {
+        classId,
+      },
+      orderBy: {
+        uploadedAt: "desc",
+      },
+    });
+
+    return contentList;
+  } catch (error) {
+    console.error("Failed to fetch content:", error);
+    throw new Error("Could not fetch content for the selected classroom.");
+  }
+}
