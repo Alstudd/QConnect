@@ -1,7 +1,5 @@
-import MCQQuiz from "~/components/MCQQuiz";
+import MCQ from "~/components/MCQ";
 
 export default function QuizPage() {
-  return (
-    <MCQQuiz contentId="content-123" />
-  );
+  return <MCQ />;
 }
