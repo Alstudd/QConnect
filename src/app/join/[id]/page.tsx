@@ -1,7 +1,8 @@
 import { JoinClass } from "~/components/JoinClass";
 
-export default function Page({ params }: { params: { id: string } }) {
-  const classId = params.id;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const classId = id;
 
   return <JoinClass classId={classId} />;
 }
