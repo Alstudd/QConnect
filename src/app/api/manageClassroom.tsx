@@ -46,3 +46,20 @@ export async function getTeacherClassrooms(userId: string) {
   });
   return enrolledClasses;
 }
+
+export async function getClassroomById(classroomId: string) {
+  const classroom = await db.classroom.findUnique({
+    where: {
+      id: classroomId,
+    },
+    include: {
+      Topic: true,
+      EnrolledIn: {
+        include: {
+          student: true,
+        },
+      },
+    },
+  });
+  return classroom;
+}

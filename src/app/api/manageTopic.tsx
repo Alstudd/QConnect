@@ -57,3 +57,17 @@ export async function addTopic({
     throw new Error("Failed to add content");
   }
 }
+
+export async function getTopicById(topicId: string) {
+  const topic = await db.topic.findUnique({
+    where: {
+      id: topicId,
+    },
+    include: {
+      Document: true,
+      States: true,
+    },
+  });
+
+  return topic;
+}
