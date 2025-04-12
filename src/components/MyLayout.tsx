@@ -43,7 +43,7 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <nav className="hidden bg-white md:block dark:bg-black text-black dark:text-white">
-        <div className="z-[30] mx-2 flex flex-wrap items-center justify-between p-2 md:mx-10">
+        <div className="z-[30] border-b-2 px-2 flex flex-wrap items-center justify-between p-2 md:px-10">
           <a
             href="/"
             className="flex items-center space-x-3 text-black rtl:space-x-reverse dark:text-white"
@@ -106,10 +106,22 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
                         <DropdownMenuLabel>My Profile</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <Link href={`/profile/${user.id}`}>
-                          <DropdownMenuItem>{user.name}</DropdownMenuItem>
-                        </Link>
-                        <Link href={`/profile/${user.id}`}>
-                          <DropdownMenuItem>{user.email}</DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <div className="flex flex-col">
+                              <span>{user.name}</span>
+                              <span>
+                                {user.isTeacher ? (
+                                  <p className="text-muted-foreground text-xs leading-snug">
+                                    Teacher
+                                  </p>
+                                ) : (
+                                  <p className="text-muted-foreground text-xs leading-snug">
+                                    Student
+                                  </p>
+                                )}
+                              </span>
+                            </div>
+                          </DropdownMenuItem>
                         </Link>
                         <DropdownMenuItem
                           onClick={() => {
@@ -268,7 +280,7 @@ const ListItem = React.forwardRef<
           {...props}
         >
           <div className="text-sm leading-none font-medium">{title}</div>
-          <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
+          <p className="text-muted-foreground text-sm leading-snug">
             {children}
           </p>
         </a>

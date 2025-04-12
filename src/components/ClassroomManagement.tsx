@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -129,7 +129,6 @@ export default function ClassroomManagementUI() {
     },
   ]);
 
-  // Only display documents for the selected classroom
   const filteredDocuments = selectedClassroom
     ? documents.filter((doc) => doc.classroomId === selectedClassroom.id)
     : [];
@@ -157,24 +156,22 @@ export default function ClassroomManagementUI() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-100 dark:bg-black text-black dark:text-slate-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-xl font-bold text-slate-800">QConnect</h2>
+      <div className="w-64 bg-white dark:bg-black border-r border-slate-200 dark:border-slate-700 flex flex-col">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-bold">QConnect</h2>
         </div>
 
-        {user?.isTeacher ? (
-          <div className="p-4 border-b border-slate-200">
+        {user?.isTeacher && (
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700">
             <CreateClassroomForm onSubmit={handleCreateClassroom} />
           </div>
-        ) : (
-          ""
         )}
 
         <div className="flex-1 overflow-auto">
           <div className="p-4">
-            <h3 className="text-sm font-medium text-slate-500 mb-3">
+            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
               YOUR CLASSROOMS
             </h3>
             <ScrollArea className="h-full">
@@ -190,7 +187,7 @@ export default function ClassroomManagementUI() {
           </div>
         </div>
 
-        <div className="p-4 mt-auto border-t border-slate-200">
+        <div className="p-4 mt-auto border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Avatar className="h-8 w-8">
@@ -218,20 +215,16 @@ export default function ClassroomManagementUI() {
         {selectedClassroom ? (
           <>
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-slate-800">
-                {selectedClassroom.name}
-              </h1>
-              <p className="text-slate-500">{selectedClassroom.description}</p>
+              <h1 className="text-2xl font-bold">{selectedClassroom.name}</h1>
+              <p className="text-slate-500 dark:text-slate-400">
+                {selectedClassroom.description}
+              </p>
             </div>
 
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-slate-700">
-                Documents
-              </h2>
-              {user?.isTeacher ? (
+              <h2 className="text-lg font-semibold">Documents</h2>
+              {user?.isTeacher && (
                 <AddDocumentDialog onSubmit={handleCreateDocument} />
-              ) : (
-                ""
               )}
             </div>
 
@@ -241,25 +234,20 @@ export default function ClassroomManagementUI() {
               ))}
 
               {filteredDocuments.length === 0 && (
-                <div className="col-span-full flex justify-center items-center p-12 bg-slate-100 rounded-lg">
+                <div className="col-span-full flex justify-center items-center p-12 bg-slate-100 dark:bg-black rounded-lg">
                   <div className="text-center">
-                    <Book size={48} className="mx-auto text-slate-400 mb-4" />
-                    <h3 className="text-slate-600 font-medium mb-2">
-                      No documents yet
-                    </h3>
-                    {user?.isTeacher ? (
-                      <p className="text-slate-500 mb-4">
-                        Upload a document to get started
-                      </p>
-                    ) : (
-                      <p className="text-slate-500 mb-4">
-                        Your teacher hasn't uploaded any documents yet
-                      </p>
-                    )}
-                    {user?.isTeacher ? (
+                    <Book
+                      size={48}
+                      className="mx-auto text-slate-400 dark:text-slate-500 mb-4"
+                    />
+                    <h3 className="font-medium mb-2">No documents yet</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mb-4">
+                      {user?.isTeacher
+                        ? "Upload a document to get started"
+                        : "Your teacher hasn't uploaded any documents yet"}
+                    </p>
+                    {user?.isTeacher && (
                       <AddDocumentDialog onSubmit={handleCreateDocument} />
-                    ) : (
-                      ""
                     )}
                   </div>
                 </div>
@@ -270,18 +258,14 @@ export default function ClassroomManagementUI() {
           <div className="flex justify-center items-center h-full">
             <div className="text-center">
               <Brain size={48} className="mx-auto text-slate-400 mb-4" />
-              <h2 className="text-xl font-semibold text-slate-700 mb-2">
+              <h2 className="text-xl font-semibold mb-2">
                 Welcome to QConnect
               </h2>
-              {user?.isTeacher ? (
-                <p className="text-slate-500 mb-4">
-                  Select a classroom or create a new one to get started
-                </p>
-              ) : (
-                <p className="text-slate-500 mb-4">
-                  Select a classroom to get started
-                </p>
-              )}
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                {user?.isTeacher
+                  ? "Select a classroom or create a new one to get started"
+                  : "Select a classroom to get started"}
+              </p>
             </div>
           </div>
         )}
@@ -416,7 +400,11 @@ function ClassroomSidebarItem({
   return (
     <Button
       variant={isActive ? "secondary" : "ghost"}
-      className={`w-full justify-start mb-1 ${isActive ? "bg-slate-100" : ""}`}
+      className={`w-full justify-start mb-1 ${
+        isActive
+          ? "bg-slate-100 text-black dark:bg-slate-800 dark:text-white"
+          : ""
+      }`}
       onClick={onClick}
     >
       <Book size={16} className="mr-2" />
