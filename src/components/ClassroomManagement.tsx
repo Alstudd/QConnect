@@ -38,6 +38,7 @@ import {
   Brain,
 } from "lucide-react";
 import { useUser } from "./AuthComponent";
+import { createClassroom } from "~/app/api/manageClassroom";
 
 interface Classroom {
   id: number;
@@ -297,9 +298,17 @@ function CreateClassroomForm({ onSubmit }: CreateClassroomFormProps) {
     description: "",
     studentEmails: "",
   });
+  const { user } = useUser();
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    await createClassroom({
+      name: formData.name,
+      teacherId: user?.id!,
+      description: formData.description,
+    });
+
     const emailsArray = formData.studentEmails
       .split(",")
       .map((email) => email.trim())
