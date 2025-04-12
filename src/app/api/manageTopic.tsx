@@ -72,7 +72,7 @@ export async function getTopicById(topicId: string) {
   return topic;
 }
 
-export async function getTopicByClassroom(topicId) {
+export async function getTopicByClassroom(topicId: string) {
   try {
     const topic = await db.topic.findUnique({
       where: { id: topicId },
