@@ -75,7 +75,7 @@ model Classroom {
     createdAt   DateTime     @default(now())
     updatedAt   DateTime     @updatedAt
     EnrolledIn  EnrolledIn[]
-    Content     Content[]
+    Topic       Topic[]
 }
 
 model EnrolledIn {
@@ -91,29 +91,38 @@ model EnrolledIn {
     joinedAt DateTime @default(now())
 }
 
-model Content {
+model Topic {
     id          String     @id @default(cuid())
     title       String
     description String?
-    contentUrl  String
-    vectorUrl   String
-    fileType    String? // e.g., "pdf", "video", etc.
+    fileType    String?
     classId     String
     classroom   Classroom  @relation(fields: [classId], references: [id])
     uploadedAt  DateTime   @default(now())
     Test        Test[]
     Question    Question[]
     States      States[]
+    Document    Document[]
+    createdOn   DateTime   @default(now())
+}
+
+model Document {
+    id         String   @id @default(cuid())
+    name       String
+    topicId    String
+    topic      Topic    @relation(fields: [topicId], references: [id])
+    docUrl     String
+    uploadedOn DateTime @default(now())
 }
 
 model Test {
     id          String    @id @default(cuid())
     studentId   String
-    contentId   String
+    topicId     String
     submittedAt DateTime?
 
     student User      @relation(fields: [studentId], references: [id])
-    content Content   @relation(fields: [contentId], references: [id])
+    topic   Topic     @relation(fields: [topicId], references: [id])
     Attempt Attempt[]
 }
 
@@ -122,8 +131,8 @@ model Question {
     questionText  String
     options       String // Array of options (e.g., ["A", "B", "C", "D"])
     correctOption String // Should match one of the entries in options
-    contentId     String
-    content       Content   @relation(fields: [contentId], references: [id])
+    topicId       String
+    topic         Topic     @relation(fields: [topicId], references: [id])
     Attempt       Attempt[]
 }
 
@@ -140,10 +149,10 @@ model Attempt {
 }
 
 model States {
-    id        String  @id @default(cuid())
-    contentId String
-    content   Content @relation(fields: [contentId], references: [id])
-    name      String
+    id      String @id @default(cuid())
+    topicId String
+    topic   Topic  @relation(fields: [topicId], references: [id])
+    name    String
 }
 
 model QTable {
