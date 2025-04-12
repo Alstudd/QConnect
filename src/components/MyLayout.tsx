@@ -6,6 +6,7 @@ import {
   Home,
   PackageOpen,
   PanelLeft,
+  Scroll,
   User2,
   UserCircle2,
   Users2,
@@ -35,7 +36,7 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
   const [links, setLinks] = useState([
     { title: "Home", href: "/", icon: <Home /> },
     { title: "Classrooms", href: "/classrooms", icon: <PackageOpen /> },
-    { title: "Page", href: "/page", icon: <User2 /> },
+    { title: "Reports", href: "/reports", icon: <Scroll /> },
     { title: "Hello", href: "/hello", icon: <CalendarFold /> },
   ]);
   const { user } = useUser();
