@@ -71,3 +71,16 @@ export async function getTopicById(topicId: string) {
 
   return topic;
 }
+
+export async function getTopicByTest(testId: string) {
+  const topic = await db.test.findUnique({
+    where: {
+      id: testId,
+    },
+    include: {
+      topic: true,
+    },
+  });
+
+  return topic;
+}
