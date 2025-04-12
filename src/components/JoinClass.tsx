@@ -4,10 +4,13 @@ import { Card } from "./ui/card";
 import { CircleCheck, Loader2, User2 } from "lucide-react";
 import { useUser } from "./AuthComponent";
 import { enrollStudent } from "~/app/api/manageEnrolledin";
+import { useRouter } from "next/navigation";
 
 export const JoinClass = ({ classId }: { classId: string }) => {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
     const enroll = async () => {
       if (user?.id && classId) {
@@ -17,6 +20,7 @@ export const JoinClass = ({ classId }: { classId: string }) => {
             classId,
             studentId: user.id,
           });
+          router.push(`/classroom/${classId}`);
         } catch (e) {
           console.log(e);
         }
