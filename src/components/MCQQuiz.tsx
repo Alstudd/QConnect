@@ -476,7 +476,7 @@ const MCQQuiz: React.FC<QuizProps> = ({ contentId, testId }) => {
     else if (accuracy >= 50) performanceLevel = "Intermediate";
 
     return (
-      <Card className="my-3 bg-white dark:bg-black w-full max-w-3xl mx-auto overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-800">
+      <Card className="my-3 mt-14 bg-white dark:bg-black w-full max-w-3xl mx-auto overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-800">
         <CardHeader className="dark:text-white text-black">
           <CardTitle className="text-2xl font-bold flex items-center">
             <Award className="mr-2" size={28} />

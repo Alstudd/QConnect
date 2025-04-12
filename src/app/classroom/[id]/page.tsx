@@ -84,7 +84,10 @@ export default function ClassroomPage() {
   const [isAddTopicOpen, setIsAddTopicOpen] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
-  const [topicFormData, setTopicFormData] = useState({ topicName: "", topicDesc: "" });
+  const [topicFormData, setTopicFormData] = useState({
+    topicName: "",
+    topicDesc: "",
+  });
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("topics");
 
@@ -254,7 +257,8 @@ export default function ClassroomPage() {
                         <DialogHeader>
                           <DialogTitle>Add New Topic</DialogTitle>
                           <DialogDescription>
-                            Create a new topic with documents for your students to learn from.
+                            Create a new topic with documents for your students
+                            to learn from.
                           </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleAddTopic}>
@@ -371,9 +375,7 @@ export default function ClassroomPage() {
                       size={48}
                       className="mx-auto text-slate-400 dark:text-slate-500 mb-4"
                     />
-                    <h3 className="text-lg font-medium mb-2">
-                      No topics yet
-                    </h3>
+                    <h3 className="text-lg font-medium mb-2">No topics yet</h3>
                     <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
                       {user?.isTeacher
                         ? "Start by adding a topic to help organize your classroom content"
@@ -459,7 +461,9 @@ export default function ClassroomPage() {
                                         </span>
                                       </div>
                                       <Progress
-                                        value={(2 / classroom.Topic.length) * 100}
+                                        value={
+                                          (2 / classroom.Topic.length) * 100
+                                        }
                                         className="h-2"
                                       />
                                     </div>
