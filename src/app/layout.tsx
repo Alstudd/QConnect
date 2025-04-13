@@ -9,6 +9,7 @@ import { Toaster } from "~/components/ui/sonner";
 import MyLayout from "~/components/MyLayout";
 import { ThemeProvider } from "~/components/theme-provider";
 import Chatbot from "~/components/Chatbot";
+import QueryChatbot from "~/components/QueryChatbot";
 
 export const metadata: Metadata = {
   title: "QConnect | Home",
@@ -34,7 +35,11 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <MyLayout><Chatbot />{children}</MyLayout>
+              <MyLayout>
+                {/* <Chatbot /> */}
+                <QueryChatbot />
+                {children}
+              </MyLayout>
               <Toaster />
             </ThemeProvider>
           </UserProvider>

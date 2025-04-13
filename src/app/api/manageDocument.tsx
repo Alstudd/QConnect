@@ -24,8 +24,11 @@ export async function addDocument({
       data: {
         id,
         name: title, // In the schema, Document has 'name' not 'title'
-        topicId,     // Document is related to Topic, not directly to Classroom
-        docUrl: files.length > 0 ? `https://qconnectsm.s3.ap-south-1.amazonaws.com/${files[0]}` : "",
+        topicId, // Document is related to Topic, not directly to Classroom
+        docUrl:
+          files.length > 0
+            ? `https://qconnectsm.s3.ap-south-1.amazonaws.com/${files[0]}`
+            : "",
       },
     });
 
@@ -39,7 +42,7 @@ export async function addDocument({
           },
         });
       });
-      
+
       await Promise.all(statePromises);
     }
 
@@ -58,10 +61,10 @@ export async function getDocumentsByTopic(topicId: string) {
         topicId: topicId,
       },
       orderBy: {
-        uploadedOn: 'desc'
-      }
+        uploadedOn: "desc",
+      },
     });
-    
+
     return documents;
   } catch (error) {
     console.error("Error fetching documents:", error);
@@ -77,7 +80,7 @@ export async function deleteDocument(documentId: string) {
         id: documentId,
       },
     });
-    
+
     return { success: true };
   } catch (error) {
     console.error("Error deleting document:", error);
