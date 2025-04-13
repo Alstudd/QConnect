@@ -18,6 +18,20 @@ export async function getNumberOfTestsTaken(userId: string) {
   }
 }
 
+export async function getTestsByTopicId(topicId: string) {
+  try {
+    const tests = await db.test.findMany({
+      where: {
+        topicId: topicId,
+      },
+    });
+    return tests;
+  } catch (error) {
+    console.error("Error getting tests:", error);
+    throw error;
+  }
+}
+
 export async function createTest({
   topicId,
   studentId,
