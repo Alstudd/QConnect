@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
@@ -6,6 +7,11 @@ import Image from "next/image";
 import { TextEffect } from "~/components/ui/text-effect";
 import { AnimatedGroup } from "~/components/ui/animated-group";
 import SubHero from "./SubHero";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+import { steps } from "framer-motion";
+import { tourSteps } from "~/lib/toursteps";
+import Footer from "./Footer";
 
 const transitionVariants = {
   item: {
@@ -25,6 +31,33 @@ const transitionVariants = {
       },
     },
   },
+};
+
+const showdemofunction = () => {
+  let steps = 1;
+  localStorage.setItem("start_demo_tour", "true");
+  const driverObj = driver({
+    popoverClass: "driverjs-theme",
+    allowClose: true,
+    showProgress: true,
+    onNextClick: (element) => {
+      (element as HTMLElement).click(); // Optional if you're auto-clicking
+    },
+    onCloseClick: () => {
+      // Optional: also fires on close button
+      localStorage.removeItem("start_demo_tour");
+      console.log("Tour closed by user");
+    },
+    onDeselected: () => {
+      // Called when the user exits the tour
+      localStorage.removeItem("start_demo_tour");
+      console.log("Tour ended or closed");
+    },
+    steps: tourSteps,
+  });
+
+  // Start the tour
+  driverObj.drive();
 };
 
 export default function HeroSection() {
@@ -144,24 +177,24 @@ export default function HeroSection() {
                   >
                     <Button
                       asChild
+                      id="login"
                       size="lg"
                       className="rounded-xl px-5 text-base"
                     >
-                      <Link href="#link">
+                      <Link href="/login">
                         <span className="text-nowrap">Start Learning</span>
                       </Link>
                     </Button>
                   </div>
                   <Button
                     key={2}
+                    onClick={showdemofunction}
                     asChild
                     size="lg"
                     variant="ghost"
                     className="h-10.5 rounded-xl px-5"
                   >
-                    <Link href="#link">
-                      <span className="text-nowrap">Request a demo</span>
-                    </Link>
+                    <span className="text-nowrap">Request a demo</span>
                   </Button>
                 </AnimatedGroup>
               </div>
@@ -296,6 +329,7 @@ export default function HeroSection() {
           </div>
         </section> */}
         <SubHero />
+        <Footer />
       </main>
     </>
   );
