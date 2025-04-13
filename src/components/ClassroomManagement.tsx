@@ -36,6 +36,7 @@ import {
   Settings,
   LogOut,
   Brain,
+  Calendar,
 } from "lucide-react";
 import { useUser } from "./AuthComponent";
 import {
@@ -57,6 +58,7 @@ import type { Topic } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { addTopic } from "~/app/api/manageTopic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type ClassroomsWithTopic = Prisma.ClassroomGetPayload<{
   include: { Topic: true };
@@ -68,6 +70,7 @@ export default function ClassroomManagementUI() {
   const { user } = useUser();
   const [classrooms, setClassrooms] = useState<ClassroomsWithTopic[]>([]);
   const [topic, setTopic] = useState<Topic[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     getClassrooms();
@@ -76,7 +79,7 @@ export default function ClassroomManagementUI() {
   const getClassrooms = async () => {
     if (user) {
       if (user.isTeacher) {
-        const res = await getTeacherClassrooms(user.id);
+        const res: any = await getTeacherClassrooms(user.id);
         console.log(res);
         setClassrooms(res);
       } else {
@@ -95,7 +98,9 @@ export default function ClassroomManagementUI() {
     <div className="flex h-screen bg-slate-100 dark:bg-black text-black dark:text-slate-100">
       <div className="w-64 bg-white dark:bg-black border-r border-slate-200 dark:border-slate-700 flex flex-col">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-xl font-bold">{user?.isTeacher ? "Create" : "View"}</h2>
+          <h2 className="text-xl font-bold">
+            {user?.isTeacher ? "Create" : "View"}
+          </h2>
         </div>
 
         {user?.isTeacher && (
@@ -147,8 +152,20 @@ export default function ClassroomManagementUI() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
-        {selectedClassroom ? (
+      {/* <div className="flex-1 overflow-auto p-6"> */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 h-fit">
+        {classrooms.map((classroom) => (
+          <ClassroomCard
+            key={classroom.id}
+            classroom={classroom}
+            onClick={() => {
+              router.push(`/classroom/${classroom.id}`);
+            }}
+            isTeacher={user?.isTeacher}
+          />
+        ))}
+        </div>
+        {/* {selectedClassroom ? (
           <>
             <div className="mb-6">
               <h1 className="text-2xl font-bold">{selectedClassroom.name}</h1>
@@ -191,9 +208,66 @@ export default function ClassroomManagementUI() {
               </p>
             </div>
           </div>
-        )}
-      </div>
+        )} */}
+      {/* </div> */}
     </div>
+  );
+}
+
+function ClassroomCard({ classroom, onClick, isTeacher }: any) {
+  return (
+    <Card
+      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-md font-semibold truncate">
+              {classroom.name}
+            </CardTitle>
+            <CardDescription className="truncate">
+              {classroom.description || "No description provided"}
+            </CardDescription>
+          </div>
+          {isTeacher && (
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical size={16} />
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center text-sm text-slate-500 space-x-4">
+          {/* <div className="flex items-center">
+            <File size={14} className="mr-1" />
+            <span>{classroom.fileType || "PDF"}</span>
+          </div> */}
+          <div className="flex items-center">
+            <Calendar size={14} className="mr-1" />
+            <span>{new Date(classroom.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-0 flex justify-between bg-slate-50 dark:bg-slate-800/50">
+        <Button onClick={onClick} variant="link" size="sm" className="px-0">
+          View Classroom
+        </Button>
+        {isTeacher && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-red-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Delete functionality
+            }}
+          >
+            <Trash2 size={16} />
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -201,7 +275,7 @@ export async function sendClassroomInvites({
   classroomId,
   classroomName,
   emails,
-  teacherName
+  teacherName,
 }: {
   classroomId: string;
   classroomName: string;
@@ -216,10 +290,10 @@ export async function sendClassroomInvites({
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
     const joinUrl = `${baseUrl}/join/${classroomId}`;
-    
-    const response = await fetch('/api/sendMail', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+
+    const response = await fetch("/api/sendMail", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `Invitation to join ${classroomName}`,
         message: `You have been invited to join a classroom on QConnect`,
@@ -227,8 +301,8 @@ export async function sendClassroomInvites({
         classroomName: classroomName,
         classroomId: classroomId,
         teacherName: teacherName,
-        joinUrl: joinUrl
-      })
+        joinUrl: joinUrl,
+      }),
     });
 
     if (!response.ok) {
@@ -393,19 +467,18 @@ function ClassroomSidebarItem({
 }: ClassroomSidebarItemProps) {
   return (
     <Link href={`/classroom/${classroom.id}`}>
-    <Button
-      variant={isActive ? "secondary" : "ghost"}
-      className={`cursor-pointer w-full justify-start mb-1 ${
-        isActive
-          ? "bg-slate-100 text-black dark:bg-slate-800 dark:text-white"
-          : ""
-      }`}
-    >
-      <Book size={16} className="mr-2" />
-      <span className="truncate">{classroom.name}</span>
-      {isActive && <ChevronRight size={16} className="ml-auto" />}
-    </Button>
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        className={`cursor-pointer w-full justify-start mb-1 ${
+          isActive
+            ? "bg-slate-100 text-black dark:bg-slate-800 dark:text-white"
+            : ""
+        }`}
+      >
+        <Book size={16} className="mr-2" />
+        <span className="truncate">{classroom.name}</span>
+        {isActive && <ChevronRight size={16} className="ml-auto" />}
+      </Button>
     </Link>
   );
 }
-

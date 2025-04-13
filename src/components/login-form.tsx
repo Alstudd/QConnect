@@ -11,11 +11,14 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import LoadingSpinner from "./LoadingSpinner";
+import { driver } from "driver.js";
+import { tourSteps } from "~/lib/toursteps";
+import "driver.js/dist/driver.css";
 
 export function LoginForm({
   className,
@@ -26,6 +29,37 @@ export function LoginForm({
     password: "",
     redirect: false,
   });
+
+  useEffect(() => {
+    const shouldStartTour = localStorage.getItem("start_demo_tour") === "true";
+    if (shouldStartTour) {
+      const startStep = 1;
+
+      const driverObj = driver({
+        popoverClass: "driverjs-theme",
+        allowClose: true,
+        showProgress: true,
+        onNextClick: (element) => {
+          (element as HTMLElement).click(); // Optional if you're auto-clicking
+        },
+        onCloseClick: () => {
+          // Optional: also fires on close button
+          localStorage.removeItem("start_demo_tour");
+          console.log("Tour closed by user");
+        },
+        // onDeselected: () => {
+        //   // Called when the user exits the tour
+        //   localStorage.removeItem("start_demo_tour");
+        //   console.log("Tour ended or closed");
+        // },
+        steps: tourSteps,
+      });
+
+      if (startStep <= tourSteps.length) {
+        driverObj.drive(startStep);
+      }
+    }
+  }, []);
 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -72,7 +106,7 @@ export function LoginForm({
                         email: e.target.value,
                       }));
                     }}
-                    id="email"
+                    id="login-email"
                     type="email"
                     placeholder="m@example.com"
                     required
@@ -96,7 +130,7 @@ export function LoginForm({
                       }));
                     }}
                     placeholder="*******"
-                    id="password"
+                    id="login-password"
                     type="password"
                     required
                   />
@@ -112,7 +146,11 @@ export function LoginForm({
               </div>
               <div className="text-center text-sm">
                 Don&apos;t have an account?{" "}
-                <Link href="/signup" className="underline underline-offset-4">
+                <Link
+                  id="signup"
+                  href="/signup"
+                  className="underline underline-offset-4"
+                >
                   Sign up
                 </Link>
               </div>

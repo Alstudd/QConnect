@@ -119,9 +119,11 @@ export async function getQuestion(
 ): Promise<{ state: string; action?: string }> {
   if (state) {
     const a = await selectAction(userId, topicId, state);
+    console.log(state, a, "wwwwwwwwwwwwwwwwwwwwwwwwww");
     const nextState = await getNextState(state, a, topicId);
     return { state: nextState, action: a };
   } else {
+    console.log("firsttttttttttttttttttttttttt");
     const nextState = await getRandomState(topicId);
     return { state: nextState };
   }

@@ -2,6 +2,7 @@
 import {
   Brain,
   BrainCircuit,
+  BusFront,
   CalendarFold,
   Home,
   PackageOpen,
@@ -25,7 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import type { User } from "@prisma/client";
 import { ModeToggle } from "./ModeToggle";
 import { usePathname } from "next/navigation";
 import { useUser } from "./AuthComponent";
@@ -37,7 +37,7 @@ const Navbar = ({ children }: { children: React.ReactNode }) => {
     { title: "Home", href: "/", icon: <Home /> },
     { title: "Classrooms", href: "/classrooms", icon: <PackageOpen /> },
     { title: "Reports", href: "/reports", icon: <Scroll /> },
-    { title: "Hello", href: "/hello", icon: <CalendarFold /> },
+    { title: "Journey", href: "/journey", icon: <BusFront /> },
   ]);
   const { user } = useUser();
 

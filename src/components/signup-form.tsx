@@ -11,13 +11,16 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import Link from "next/link";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { createUser } from "~/app/api/manageUser";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { Switch } from "./ui/switch";
+import { driver } from "driver.js";
+import { tourSteps } from "~/lib/toursteps";
+import "driver.js/dist/driver.css";
 
 export function SignUpForm({
   className,
@@ -56,6 +59,38 @@ export function SignUpForm({
       }
     }
   };
+
+  useEffect(() => {
+    const shouldStartTour = localStorage.getItem("start_demo_tour") === "true";
+    if (shouldStartTour) {
+      const startStep = 2;
+
+      const driverObj = driver({
+        popoverClass: "driverjs-theme",
+        allowClose: true,
+        showProgress: true,
+        onNextClick: (element) => {
+          (element as HTMLElement).click(); // Optional if you're auto-clicking
+        },
+        onCloseClick: () => {
+          // Optional: also fires on close button
+          localStorage.removeItem("start_demo_tour");
+          console.log("Tour closed by user");
+        },
+        onDeselected: () => {
+          // Called when the user exits the tour
+          localStorage.removeItem("start_demo_tour");
+          console.log("Tour ended or closed");
+        },
+        steps: tourSteps,
+      });
+
+      console.log("Tour started", tourSteps.length);
+      if (startStep <= tourSteps.length) {
+        driverObj.drive(startStep);
+      }
+    }
+  }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -225,7 +260,7 @@ export function SignUpForm({
                 <div className="grid gap-2">
                   <Label htmlFor="name">User Type</Label>
 
-                  <div className="grid sm:grid-cols-2 gap-2">
+                  <div id="select-user" className="grid sm:grid-cols-2 gap-2">
                     {/* Student Switch */}
                     <div
                       className={`border-input ${
@@ -389,7 +424,7 @@ export function SignUpForm({
                       }));
                     }}
                     placeholder="******"
-                    id="password"
+                    id="sign-password"
                     type="password"
                     required
                   />

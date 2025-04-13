@@ -73,11 +73,12 @@ import {
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
 import { Progress } from "~/components/ui/progress";
+import { createTest } from "~/app/api/manageTest";
 
 type TopicWithDetails = Prisma.TopicGetPayload<{
-  include: { 
-    Document: true; 
-    Test: true; 
+  include: {
+    Document: true;
+    Test: true;
     classroom: true;
   };
 }>;
@@ -103,24 +104,29 @@ export default function TopicPage() {
   const [isCreateTestOpen, setIsCreateTestOpen] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ documentName: "", documentDesc: "" });
-  const [testFormData, setTestFormData] = useState({ testName: "", testDesc: "", duration: 30 });
+  const [formData, setFormData] = useState({
+    documentName: "",
+    documentDesc: "",
+  });
+  const [testFormData, setTestFormData] = useState({
+    testName: "",
+    testDesc: "",
+    duration: 30,
+  });
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("documents");
   const [testLoading, setTestLoading] = useState(false);
   const [classroomId, setClassroomId] = useState<any>(null);
   const [classroomName, setClassroomName] = useState<any>(null);
 
-  const createTest = async () => {
+  const createTest2 = async () => {
     setTestLoading(true);
     try {
-
     } catch {
-
     } finally {
       setTestLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (topicId) {
@@ -129,8 +135,8 @@ export default function TopicPage() {
         const topicByClassroom = await getTopicByClassroom(topicId);
         setClassroomId(topicByClassroom.classroom.id);
         setClassroomName(topicByClassroom.classroom.name);
-      }
-      func()
+      };
+      func();
     }
   }, [topicId]);
 
@@ -189,9 +195,13 @@ export default function TopicPage() {
 
   const handleCreateTest = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsCreateTestOpen(true);
+
+    const test = await createTest({ topicId: topicId, studentId: user?.id! });
+    router.push(`/test/${test.id}`);
     // Add your test creation logic here
     setIsCreateTestOpen(false);
-    setTestFormData({ testName: "", testDesc: "", duration: 30 });
+    // setTestFormData({ testName: "", testDesc: "", duration: 30 });
   };
 
   const navigateToDocument = (documentId: string) => {
@@ -278,7 +288,8 @@ export default function TopicPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {topic.Document?.length || 0} Documents • {topic.Test?.length || 0} Tests
+                    {topic.Document?.length || 0} Documents •{" "}
+                    {topic.Test?.length || 0} Tests
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Created on {new Date(topic.createdOn).toLocaleDateString()}
@@ -471,13 +482,17 @@ export default function TopicPage() {
                   <h2 className="text-lg font-semibold">
                     Tests ({topic.Test?.length || 0})
                   </h2>
-                  {user?.isTeacher && (
+                  {/* {user?.isTeacher && (
                     <Dialog
                       open={isCreateTestOpen}
                       onOpenChange={setIsCreateTestOpen}
                     >
                       <DialogTrigger asChild>
-                        <Button onClick={createTest} disabled={testLoading} className="flex items-center">
+                        <Button
+                          onClick={createTest2}
+                          disabled={testLoading}
+                          className="flex items-center cursor-pointer"
+                        >
                           <Plus size={16} className="mr-2" />
                           Create Test
                           <Loader2
@@ -492,7 +507,8 @@ export default function TopicPage() {
                         <DialogHeader>
                           <DialogTitle>Create New Test</DialogTitle>
                           <DialogDescription>
-                            Create an assessment for students to test their knowledge.
+                            Create an assessment for students to test their
+                            knowledge.
                           </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreateTest}>
@@ -567,14 +583,12 @@ export default function TopicPage() {
                             >
                               Cancel
                             </Button>
-                            <Button type="submit">
-                              Create Test
-                            </Button>
+                            <Button type="submit">Create Test</Button>
                           </DialogFooter>
                         </form>
                       </DialogContent>
                     </Dialog>
-                  )}
+                  )} */}
                 </div>
 
                 {topic.Test && topic.Test.length > 0 ? (
@@ -599,10 +613,10 @@ export default function TopicPage() {
                     </h3>
                     <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
                       {user?.isTeacher
-                        ? "Create tests to assess student understanding of this topic"
-                        : "Your teacher hasn't created any tests for this topic yet"}
+                        ? "No tests have been attempted yet"
+                        : "Attempt tests to assess your understanding of this topic"}
                     </p>
-                    {user?.isTeacher && (
+                    {/* {user?.isTeacher && (
                       <Button
                         onClick={() => setIsCreateTestOpen(true)}
                         className="flex items-center mx-auto"
@@ -610,7 +624,7 @@ export default function TopicPage() {
                         <Plus size={16} className="mr-2" />
                         Create Your First Test
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 )}
               </TabsContent>
@@ -635,9 +649,7 @@ export default function TopicPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold">
-                        45 min
-                      </div>
+                      <div className="text-3xl font-bold">45 min</div>
                       <p className="text-xs text-slate-500 mt-2">
                         Average per student
                       </p>
@@ -672,7 +684,9 @@ export default function TopicPage() {
                               <h4 className="text-sm font-medium truncate">
                                 {document.title}
                               </h4>
-                              <span className="text-sm text-slate-500">80%</span>
+                              <span className="text-sm text-slate-500">
+                                80%
+                              </span>
                             </div>
                             <Progress value={80} className="h-2" />
                           </div>
@@ -711,25 +725,24 @@ export default function TopicPage() {
                   <CheckSquare className="mr-2 h-4 w-4" />
                   View Tests
                 </Button>
-                {user?.isTeacher && (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => setIsAddDocumentOpen(true)}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Document
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => setIsCreateTestOpen(true)}
-                    >
-                      <PenTool className="mr-2 h-4 w-4" />
-                      Create Test
-                    </Button>
-                  </>
+                {user?.isTeacher ? (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setIsAddDocumentOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Document
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start cursor-pointer"
+                    onClick={handleCreateTest}
+                  >
+                    <PenTool className="mr-2 h-4 w-4" />
+                    Attempt Test
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -741,9 +754,7 @@ export default function TopicPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Created</span>
-                  <span>
-                    {new Date(topic.createdOn).toLocaleDateString()}
-                  </span>
+                  <span>{new Date(topic.createdOn).toLocaleDateString()}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
@@ -762,9 +773,9 @@ export default function TopicPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="w-full"
                   onClick={() => navigateToClassroom(classroomId)}
                 >
@@ -887,12 +898,11 @@ function TestCard({ test, onClick, isTeacher }: TestCardProps) {
               e.stopPropagation();
               // Delete functionality
             }}
-            >
-              <Trash2 size={16} />
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-    );
-  }
-  
+          >
+            <Trash2 size={16} />
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  );
+}

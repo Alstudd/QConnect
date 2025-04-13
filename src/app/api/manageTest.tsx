@@ -17,3 +17,20 @@ export async function getNumberOfTestsTaken(userId: string) {
     throw error;
   }
 }
+
+export async function createTest({
+  topicId,
+  studentId,
+}: {
+  topicId: string;
+  studentId: string;
+}) {
+  const test = await db.test.create({
+    data: {
+      topicId: topicId,
+      studentId: studentId,
+    },
+  });
+
+  return test;
+}
