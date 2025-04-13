@@ -8,6 +8,7 @@ import { UserProvider } from "~/components/AuthComponent";
 import { Toaster } from "~/components/ui/sonner";
 import MyLayout from "~/components/MyLayout";
 import { ThemeProvider } from "~/components/theme-provider";
+import Chatbot from "~/components/Chatbot";
 
 export const metadata: Metadata = {
   title: "QConnect | Home",
@@ -33,7 +34,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <MyLayout>{children}</MyLayout>
+              <MyLayout><Chatbot />{children}</MyLayout>
               <Toaster />
             </ThemeProvider>
           </UserProvider>
