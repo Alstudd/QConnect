@@ -53,14 +53,6 @@ const MCQ = ({
   const [isDone, setIsDone] = useState(true);
 
   useEffect(() => {
-    setTime(0);
-    setSelectedOption(null);
-    setIsDone(false);
-    setIsCorrect(false);
-    setShowFeedback(false);
-  }, []);
-
-  useEffect(() => {
     const timer = setTimeout(() => {
       if (!isDone) {
         setTime((prevTime) => prevTime + 1);
@@ -92,6 +84,12 @@ const MCQ = ({
   };
 
   const handleNextQuestion = async () => {
+    setTime(0);
+    setSelectedOption(null);
+    setIsDone(false);
+    setIsCorrect(false);
+    setShowFeedback(false);
+
     const attempt = await submitAnswer({
       testId: testId,
       isCorrect: isCorrect,

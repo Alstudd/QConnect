@@ -44,9 +44,12 @@ export default function Test() {
     if (user) {
       const currTopic = await getTopicByTest(testId);
       setTopic(currTopic);
-      const currQuestion = await getQuestion(user.id, currTopic?.id!);
+      const currQuestion = await getQuestion(user.id, currTopic?.topic.id!);
       setCurrSA(currQuestion);
-      const oaiRes = await generateQuestion(currQuestion.state, testId);
+      const oaiRes = await generateQuestion(
+        currQuestion.state,
+        currTopic?.topic.id!
+      );
       if (oaiRes) {
         setCurrRes(oaiRes);
         console.log(oaiRes);
@@ -74,12 +77,19 @@ export default function Test() {
 
       const currQuestion = await getQuestion(
         user?.id,
+        topic?.topic.id!,
         currSA?.state!,
         currSA?.action
       );
+
+      console.log(currQuestion);
+
       setPrevSA(currSA);
       setCurrSA(currQuestion);
-      const oaiRes = await generateQuestion(currQuestion.state, testId);
+      const oaiRes = await generateQuestion(
+        currQuestion.state,
+        topic?.topic.id!
+      );
       if (oaiRes) {
         // setNextRes(oaiRes);
         console.log(oaiRes);
@@ -90,7 +100,7 @@ export default function Test() {
     }
   };
 
-  if (!currRes) {
+  if (!currRes || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-pulse flex flex-col items-center">
