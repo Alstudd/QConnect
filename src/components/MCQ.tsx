@@ -31,6 +31,7 @@ import {
 } from "./ui/alert-dialog";
 import type { Attempt, Question } from "@prisma/client";
 import { submitAnswer } from "~/app/api/manageQuiz";
+import { useRouter } from "next/navigation";
 
 const MCQ = ({
   data,
@@ -51,6 +52,7 @@ const MCQ = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [time, setTime] = useState(0);
   const [isDone, setIsDone] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -257,7 +259,7 @@ const MCQ = ({
         <CardFooter className="flex justify-between pt-6 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <Button
             variant="outline"
-            // onClick={() => setShowExitDialog(true)}
+            onClick={() => setShowExitDialog(true)}
             className="border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
           >
             Exit Quiz
@@ -303,7 +305,7 @@ const MCQ = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-            // onClick={exitQuiz}
+            onClick={() => router.push("/classrooms")}
             >
               Exit Quiz
             </AlertDialogAction>

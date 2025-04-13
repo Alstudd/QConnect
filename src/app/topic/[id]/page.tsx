@@ -482,7 +482,7 @@ export default function TopicPage() {
                   <h2 className="text-lg font-semibold">
                     Tests ({topic.Test?.length || 0})
                   </h2>
-                  {user?.isTeacher && (
+                  {/* {user?.isTeacher && (
                     <Dialog
                       open={isCreateTestOpen}
                       onOpenChange={setIsCreateTestOpen}
@@ -588,7 +588,7 @@ export default function TopicPage() {
                         </form>
                       </DialogContent>
                     </Dialog>
-                  )}
+                  )} */}
                 </div>
 
                 {topic.Test && topic.Test.length > 0 ? (
@@ -613,10 +613,10 @@ export default function TopicPage() {
                     </h3>
                     <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
                       {user?.isTeacher
-                        ? "Create tests to assess student understanding of this topic"
-                        : "Your teacher hasn't created any tests for this topic yet"}
+                        ? "No tests have been attempted yet"
+                        : "Attempt tests to assess your understanding of this topic"}
                     </p>
-                    {user?.isTeacher && (
+                    {/* {user?.isTeacher && (
                       <Button
                         onClick={() => setIsCreateTestOpen(true)}
                         className="flex items-center mx-auto"
@@ -624,7 +624,7 @@ export default function TopicPage() {
                         <Plus size={16} className="mr-2" />
                         Create Your First Test
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 )}
               </TabsContent>
@@ -725,25 +725,24 @@ export default function TopicPage() {
                   <CheckSquare className="mr-2 h-4 w-4" />
                   View Tests
                 </Button>
-                {user?.isTeacher && (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => setIsAddDocumentOpen(true)}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Document
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start cursor-pointer"
-                      onClick={handleCreateTest}
-                    >
-                      <PenTool className="mr-2 h-4 w-4" />
-                      Create Test
-                    </Button>
-                  </>
+                {user?.isTeacher ? (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setIsAddDocumentOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Document
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start cursor-pointer"
+                    onClick={handleCreateTest}
+                  >
+                    <PenTool className="mr-2 h-4 w-4" />
+                    Attempt Test
+                  </Button>
                 )}
               </CardContent>
             </Card>
