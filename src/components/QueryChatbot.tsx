@@ -134,7 +134,7 @@ const QueryChatbot = () => {
             <div className="flex items-center gap-2">
               <Bot className="w-9 h-9 p-1.5 dark:text-white text-black" />
               <div className="text-md dark:text-white text-black font-medium">
-                Query Chatbot
+                QConnect Chatbot
               </div>
             </div>
           </header>
@@ -166,7 +166,7 @@ const QueryChatbot = () => {
             {!error && messages.length === 0 && (
               <div className="dark:text-white text-black mx-8 flex h-full flex-col items-center justify-center gap-3 text-center">
                 <Bot size={28} />
-                <p>Query Chatbot</p>
+                <p>QConnect Chatbot</p>
                 <p>
                   Ask me any question and I will try to help you out!
                 </p>
@@ -216,13 +216,67 @@ interface ChatMessageProps {
 }
 
 function ChatMessage({ message: { role, content } }: ChatMessageProps) {
-  const isAiMessage = role === "assistant";
-  return (
-    <>
-      {isAiMessage ? (
-        <div className="flex items-start gap-3 ">
-          <Bot className="w-9 h-9 p-1.5 rounded-full dark:text-white text-black" />
-          <div className="text-black rounded-2xl p-3 max-w-[70%] shadow dark:bg-gray-800 dark:text-gray-200 break-words">
+    const isAiMessage = role === "assistant";
+    
+    // Helper function to check if the content is a valid JSON string
+    const isJsonString = (str: string) => {
+      try {
+        JSON.parse(str);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+  
+    // Render content differently based on type
+    const renderContent = () => {
+      if (isAiMessage) {
+        // For assistant messages, try to detect if it's JSON
+        if (isJsonString(content)) {
+          try {
+            const jsonData = JSON.parse(content);
+            // Pretty print the JSON
+            return (
+              <pre className="overflow-auto text-xs">
+                {JSON.stringify(jsonData, null, 2)}
+              </pre>
+            );
+          } catch (e) {
+            // If JSON parsing fails, fall back to ReactMarkdown
+            return (
+              <ReactMarkdown
+                components={{
+                  a: ({ node, ref, ...props }) => (
+                    <Link
+                      {...props}
+                      href={props.href ?? ""}
+                      target="_blank"
+                      className="text-primary underline"
+                    />
+                  ),
+                  p: ({ node, ref, ...props }) => {
+                    return <p {...props} className="mt-3 first:mt-0" />;
+                  },
+                  ul: ({ ref, ...props }) => {
+                    return (
+                      <ul
+                        {...props}
+                        className="mt-3 list-inside list-disc first:mt-0"
+                      />
+                    );
+                  },
+                  li: ({ node, ref, ...props }) => {
+                    return <li {...props} className="mt-1" />;
+                  },
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+            );
+          }
+        } else {
+          // If it's not JSON, use ReactMarkdown
+          return (
             <ReactMarkdown
               components={{
                 a: ({ node, ref, ...props }) => (
@@ -251,45 +305,62 @@ function ChatMessage({ message: { role, content } }: ChatMessageProps) {
             >
               {content}
             </ReactMarkdown>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-start gap-3 justify-end">
-          <div className="dark:bg-green-700 bg-green-600 rounded-2xl p-3 max-w-[70%] text-white shadow break-words">
-            <ReactMarkdown
-              components={{
-                a: ({ node, ref, ...props }) => (
-                  <Link
+          );
+        }
+      } else {
+        // For user messages, always use ReactMarkdown
+        return (
+          <ReactMarkdown
+            components={{
+              a: ({ node, ref, ...props }) => (
+                <Link
+                  {...props}
+                  href={props.href ?? ""}
+                  target="_blank"
+                  className="text-primary underline"
+                />
+              ),
+              p: ({ node, ref, ...props }) => {
+                return <p {...props} className="mt-3 first:mt-0" />;
+              },
+              ul: ({ ref, ...props }) => {
+                return (
+                  <ul
                     {...props}
-                    href={props.href ?? ""}
-                    target="_blank"
-                    className="text-primary underline"
+                    className="mt-3 list-inside list-disc first:mt-0"
                   />
-                ),
-                p: ({ node, ref, ...props }) => {
-                  return <p {...props} className="mt-3 first:mt-0" />;
-                },
-                ul: ({ ref, ...props }) => {
-                  return (
-                    <ul
-                      {...props}
-                      className="mt-3 list-inside list-disc first:mt-0"
-                    />
-                  );
-                },
-                li: ({ node, ref, ...props }) => {
-                  return <li {...props} className="mt-1" />;
-                },
-              }}
-            >
-              {content}
-            </ReactMarkdown>
+                );
+              },
+              li: ({ node, ref, ...props }) => {
+                return <li {...props} className="mt-1" />;
+              },
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        );
+      }
+    };
+  
+    return (
+      <>
+        {isAiMessage ? (
+          <div className="flex items-start gap-3 ">
+            <Bot className="w-9 h-9 p-1.5 rounded-full dark:text-white text-black" />
+            <div className="text-black rounded-2xl p-3 max-w-[70%] shadow dark:bg-gray-800 dark:text-gray-200 break-words">
+              {renderContent()}
+            </div>
           </div>
-          <User2 className="w-9 h-9 p-1.5 rounded-full dark:text-white text-black" />
-        </div>
-      )}
-    </>
-  );
-}
+        ) : (
+          <div className="flex items-start gap-3 justify-end">
+            <div className="dark:bg-green-700 bg-green-600 rounded-2xl p-3 max-w-[70%] text-white shadow break-words">
+              {renderContent()}
+            </div>
+            <User2 className="w-9 h-9 p-1.5 rounded-full dark:text-white text-black" />
+          </div>
+        )}
+      </>
+    );
+  }
 
 export default QueryChatbot;

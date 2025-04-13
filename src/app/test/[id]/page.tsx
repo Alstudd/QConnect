@@ -79,7 +79,7 @@ export default function Test() {
         `${user.name} gave a ${
           attempt.isCorrect ? "correct" : "incorrect"
         } answer for question ${currRes?.questionText} of the topic ${
-          currQuestion.state
+          currSA?.state!
         } by answering ${attempt.selectedOption} and took ${
           attempt.timeTaken
         } secs to answer`,
