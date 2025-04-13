@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import MCQQuiz from "~/components/MCQQuiz";
 import { useUser } from "~/components/AuthComponent";
 import { getQuestion, updateQValue } from "~/app/api/manageQLogic";
 import { generateQuestion } from "~/app/api/manageQuiz";
@@ -11,6 +10,8 @@ import MCQ from "~/components/MCQ";
 import type { Attempt, Question, Topic, Test } from "@prisma/client";
 import { getTopicByTest } from "~/app/api/manageTopic";
 import { Prisma } from "@prisma/client";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type TestWithTopic = Prisma.TestGetPayload<{
   include: {
@@ -32,6 +33,7 @@ export default function Test() {
   const hasRun = useRef(false);
   const questionNo = useRef(0);
   const [attempts, setAttempts] = useState<string[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -57,6 +59,14 @@ export default function Test() {
         setIsLoading(false);
       }
     }
+  };
+
+  const handleEndQuiz = async () => {
+    await axios.post("http://3.109.48.9:8000/upload_attempts", {
+      attempts: attempts,
+    });
+
+    router.push(`/topic/${topic?.topic.id}`);
   };
 
   const processSubmission = async (attempt: Attempt) => {
@@ -131,6 +141,7 @@ export default function Test() {
           topic={currSA?.state.split("-")[0]!}
           testId={testId}
           processSubmission={processSubmission}
+          handleEndQuiz={handleEndQuiz}
         />
       }
     </div>

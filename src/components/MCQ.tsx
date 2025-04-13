@@ -38,11 +38,13 @@ const MCQ = ({
   topic,
   testId,
   processSubmission,
+  handleEndQuiz,
 }: {
   data: Question;
   topic: string;
   testId: string;
   processSubmission: (attempt: Attempt) => Promise<void>;
+  handleEndQuiz: () => Promise<void>;
 }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -259,7 +261,7 @@ const MCQ = ({
         <CardFooter className="flex justify-between pt-6 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <Button
             variant="outline"
-            onClick={() => setShowExitDialog(true)}
+            onClick={handleEndQuiz}
             className="border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
           >
             Exit Quiz
@@ -304,9 +306,7 @@ const MCQ = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-            onClick={() => router.push("/classrooms")}
-            >
+            <AlertDialogAction onClick={() => router.push("/classrooms")}>
               Exit Quiz
             </AlertDialogAction>
           </AlertDialogFooter>
