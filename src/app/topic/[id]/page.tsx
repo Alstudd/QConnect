@@ -73,7 +73,8 @@ import {
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
 import { Progress } from "~/components/ui/progress";
-import { createTest } from "~/app/api/manageTest";
+import { createTest, getTestsByTopicId } from "~/app/api/manageTest";
+import Link from "next/link";
 
 type TopicWithDetails = Prisma.TopicGetPayload<{
   include: {
@@ -118,6 +119,7 @@ export default function TopicPage() {
   const [testLoading, setTestLoading] = useState(false);
   const [classroomId, setClassroomId] = useState<any>(null);
   const [classroomName, setClassroomName] = useState<any>(null);
+  const [tests, setTests] = useState<any>([]);
 
   const createTest2 = async () => {
     setTestLoading(true);
@@ -137,8 +139,27 @@ export default function TopicPage() {
         setClassroomName(topicByClassroom.classroom.name);
       };
       func();
+      const fetchTests = async () => {
+        try {
+          if (user?.isTeacher) {
+            const response = await getTestsByTopicId(topicId);
+            console.log(response);
+            setTests(response);
+          } else {
+            const response = await getTestsByTopicId(topicId);
+            console.log(response);
+            setTests(
+              response.filter((test: any) => test.studentId === user?.id)
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching tests:", error);
+        }
+      };
+      fetchTests();
     }
   }, [topicId]);
+  console.log(tests);
 
   const fetchTopicData = async () => {
     try {
@@ -289,7 +310,7 @@ export default function TopicPage() {
                 <div>
                   <p className="text-sm font-medium">
                     {topic.Document?.length || 0} Documents •{" "}
-                    {topic.Test?.length || 0} Tests
+                    {tests?.length || 0} Tests
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Created on {new Date(topic.createdOn).toLocaleDateString()}
@@ -480,7 +501,7 @@ export default function TopicPage() {
               <TabsContent value="tests" className="space-y-4">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold">
-                    Tests ({topic.Test?.length || 0})
+                    Tests ({tests?.length || 0})
                   </h2>
                   {/* {user?.isTeacher && (
                     <Dialog
@@ -591,9 +612,9 @@ export default function TopicPage() {
                   )} */}
                 </div>
 
-                {topic.Test && topic.Test.length > 0 ? (
+                {tests && tests.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {topic.Test.map((test) => (
+                    {tests.map((test: any) => (
                       <TestCard
                         key={test.id}
                         test={test}
@@ -764,12 +785,12 @@ export default function TopicPage() {
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-slate-500">Tests</span>
-                  <span>{topic.Test?.length || 0}</span>
+                  <span>{tests?.length || 0}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-slate-500">Last Updated</span>
-                  <span>3 days ago</span>
+                  <span>{new Date(topic.createdOn).toLocaleDateString()}</span>
                 </div>
               </CardContent>
               <CardFooter>
@@ -801,7 +822,7 @@ function DocumentCard({ document, onClick, isTeacher }: DocumentCardProps) {
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-md font-semibold truncate">
-              {document.title}
+              {document.name}
             </CardTitle>
             <CardDescription className="truncate">
               {document.description || "No description provided"}
@@ -820,16 +841,23 @@ function DocumentCard({ document, onClick, isTeacher }: DocumentCardProps) {
             <FileText size={14} className="mr-1" />
             <span>{document.fileType || "PDF"}</span>
           </div>
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <Calendar size={14} className="mr-1" />
             <span>{new Date(document.createdAt).toLocaleDateString()}</span>
-          </div>
+          </div> */}
         </div>
       </CardContent>
       <CardFooter className="pt-0 flex justify-between bg-slate-50 dark:bg-slate-800/50">
-        <Button variant="link" size="sm" className="px-0">
-          Read Document
-        </Button>
+        <Link
+          href={document.docUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          <Button variant="link" size="sm" className="px-0">
+            Read Document
+          </Button>
+        </Link>
         {isTeacher && (
           <Button
             variant="ghost"

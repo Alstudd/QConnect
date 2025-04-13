@@ -6,14 +6,25 @@ export async function getNumberOfTestsTaken(userId: string) {
     const count = await db.test.count({
       where: {
         studentId: userId,
-        submittedAt: {
-          not: null, // Only count submitted tests
-        },
       },
     });
     return count;
   } catch (error) {
     console.error("Error getting test count:", error);
+    throw error;
+  }
+}
+
+export async function getTestsByTopicId(topicId: string) {
+  try {
+    const tests = await db.test.findMany({
+      where: {
+        topicId: topicId,
+      },
+    });
+    return tests;
+  } catch (error) {
+    console.error("Error getting tests:", error);
     throw error;
   }
 }
