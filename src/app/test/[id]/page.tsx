@@ -31,6 +31,7 @@ export default function Test() {
   const { status } = useSession();
   const hasRun = useRef(false);
   const questionNo = useRef(0);
+  const [attempts, setAttempts] = useState<string[]>([]);
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -63,6 +64,16 @@ export default function Test() {
     console.log(currSA);
     if (user) {
       setIsLoading(true);
+      setAttempts((prev) => [
+        ...prev,
+        `${user.name} gave a ${
+          attempt.isCorrect ? "correct" : "incorrect"
+        } answer for question ${currRes?.questionText} of the topic ${
+          currQuestion.state
+        } by answering ${attempt.selectedOption} and took ${
+          attempt.timeTaken
+        } secs to answer`,
+      ]);
       if (questionNo.current >= 1) {
         await updateQValue(
           user?.id,
