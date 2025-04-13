@@ -616,10 +616,10 @@ export default function ClassroomPage() {
                       <Plus className="mr-2 h-4 w-4" />
                       Add Topic
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
+                    {/* <Button variant="outline" className="w-full justify-start">
                       <Calendar className="mr-2 h-4 w-4" />
                       Schedule Test
-                    </Button>
+                    </Button> */}
                   </>
                 )}
               </CardContent>
@@ -653,7 +653,7 @@ export default function ClassroomPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="ghost" size="sm" className="w-full">
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => router.push('/classrooms')}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Classrooms
                 </Button>
