@@ -143,6 +143,7 @@ model Attempt {
     questionId     String
     selectedOption String
     isCorrect      Boolean // Automatically marked based on comparison with correctOption
+    timeTaken      Int
     attemptedAt    DateTime @default(now())
 
     test     Test     @relation(fields: [testId], references: [id])

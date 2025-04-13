@@ -71,3 +71,36 @@ export async function getTopicById(topicId: string) {
 
   return topic;
 }
+
+export async function getTopicByTest(testId: string) {
+  const topic = await db.test.findUnique({
+    where: {
+      id: testId,
+    },
+    include: {
+      topic: true,
+    },
+  });
+
+  return topic;
+}
+
+export async function getTopicByClassroom(topicId: string) {
+  try {
+    const topic = await db.topic.findUnique({
+      where: { id: topicId },
+      include: {
+        classroom: true,
+      },
+    });
+
+    if (!topic) {
+      throw new Error("Topic not found");
+    }
+
+    return topic;
+  } catch (error) {
+    console.error("Error fetching topic:", error);
+    throw error;
+  }
+}

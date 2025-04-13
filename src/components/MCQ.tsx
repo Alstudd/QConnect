@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -29,160 +29,78 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import type { Attempt, Question } from "@prisma/client";
+import { submitAnswer } from "~/app/api/manageQuiz";
 
-const MCQ = () => {
-  const [selectedOption, setSelectedOption] = useState(null);
+const MCQ = ({
+  data,
+  topic,
+  testId,
+  processSubmission,
+}: {
+  data: Question;
+  topic: string;
+  testId: string;
+  processSubmission: (attempt: Attempt) => Promise<void>;
+}) => {
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [nextQuestionLoading, setNextQuestionLoading] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [time, setTime] = useState(0);
+  const [isDone, setIsDone] = useState(true);
 
-  interface Question {
-    id: string;
-    questionText: string;
-    options: string[];
-    correctOption: string;
-  }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isDone) {
+        setTime((prevTime) => prevTime + 1);
+      }
+    }, 1000);
 
-  const dummyQuestions: Question[] = [
-    {
-      id: "q1",
-      questionText: "What is the capital of France?",
-      options: ["London", "Berlin", "Paris", "Madrid"],
-      correctOption: "Paris",
-    },
-    {
-      id: "q2",
-      questionText: "Which planet is known as the Red Planet?",
-      options: ["Earth", "Mars", "Jupiter", "Venus"],
-      correctOption: "Mars",
-    },
-    {
-      id: "q3",
-      questionText: "What is the largest mammal on Earth?",
-      options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
-      correctOption: "Blue Whale",
-    },
-    {
-      id: "q4",
-      questionText: "Who wrote 'Romeo and Juliet'?",
-      options: [
-        "Charles Dickens",
-        "Jane Austen",
-        "William Shakespeare",
-        "Mark Twain",
-      ],
-      correctOption: "William Shakespeare",
-    },
-    {
-      id: "q5",
-      questionText: "What is the chemical symbol for gold?",
-      options: ["Go", "Gd", "Au", "Ag"],
-      correctOption: "Au",
-    },
-    {
-      id: "q6",
-      questionText: "Which country is home to the Great Barrier Reef?",
-      options: ["Brazil", "United States", "Australia", "Thailand"],
-      correctOption: "Australia",
-    },
-    {
-      id: "q7",
-      questionText: "How many continents are there on Earth?",
-      options: ["5", "6", "7", "8"],
-      correctOption: "7",
-    },
-    {
-      id: "q8",
-      questionText: "What is the largest organ in the human body?",
-      options: ["Heart", "Liver", "Skin", "Brain"],
-      correctOption: "Skin",
-    },
-    {
-      id: "q9",
-      questionText: "Which gas do plants absorb from the atmosphere?",
-      options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
-      correctOption: "Carbon Dioxide",
-    },
-    {
-      id: "q10",
-      questionText: "What is the tallest mountain in the world?",
-      options: ["K2", "Mont Blanc", "Mount Everest", "Kilimanjaro"],
-      correctOption: "Mount Everest",
-    },
-    {
-      id: "q11",
-      questionText: "Who painted the Mona Lisa?",
-      options: [
-        "Pablo Picasso",
-        "Vincent van Gogh",
-        "Leonardo da Vinci",
-        "Michelangelo",
-      ],
-      correctOption: "Leonardo da Vinci",
-    },
-    {
-      id: "q12",
-      questionText: "What is the hardest natural substance on Earth?",
-      options: ["Titanium", "Diamond", "Steel", "Quartz"],
-      correctOption: "Diamond",
-    },
-  ];
-
-  const currentQuestion = dummyQuestions[0];
+    return () => clearTimeout(timer);
+  }, [time, isDone]);
 
   const handleOptionSelect = async (option: string) => {
     if (selectedOption !== null || nextQuestionLoading) return;
 
-    setSelectedOption(option);
-    const currentQuestion: any = questions[currentQuestionIndex];
-    const correct = option === currentQuestion.correctOption;
+    const correct = option === data.correctOption;
     setIsCorrect(correct);
+    setSelectedOption(option);
 
     if (correct) {
-      setScore((prev) => prev + 100 + Math.floor(timeRemaining * 1.5));
-      setStreak((prev) => prev + 1);
+      // setScore((prev) => prev + 100 + Math.floor(timeRemaining * 1.5));
+      // setStreak((prev) => prev + 1);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
-    } else {
-      setStreak(0);
-    }
-
-    const newAttempt = {
-      questionId: currentQuestion.id,
-      selectedOption: option,
-      isCorrect: correct,
-    };
-
-    setAttempts((prev) => [...prev, newAttempt]);
-
-    try {
-      // Try to use real API, fallback to mock
-      try {
-        await axios.post("/api/attempts", {
-          testId: testId,
-          questionId: currentQuestion.id,
-          selectedOption: option,
-          isCorrect: correct,
-        });
-      } catch (error) {
-        await mockApiCalls.submitAttempt({
-          testId: testId,
-          questionId: currentQuestion.id,
-          selectedOption: option,
-          isCorrect: correct,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to save attempt:", error);
     }
 
     setShowFeedback(true);
-    setTimeout(() => {
-      setShowFeedback(false);
-      handleNextQuestion(correct);
-    }, 2000);
+
+    // setTimeout(() => {
+    //   setShowFeedback(false);
+    // }, 2000);
   };
+
+  const handleNextQuestion = async () => {
+    setTime(0);
+    setSelectedOption(null);
+    setIsDone(false);
+    setIsCorrect(false);
+    setShowFeedback(false);
+
+    const attempt = await submitAnswer({
+      testId: testId,
+      isCorrect: isCorrect,
+      timeTaken: time,
+      qid: data.id,
+      answer: selectedOption!,
+    });
+
+    await processSubmission(attempt);
+  };
+
   return (
     <div>
       <Card className="my-3 bg-white dark:bg-black w-full max-w-3xl mx-auto overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-800">
@@ -223,15 +141,16 @@ const MCQ = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge
-                  // className={`ml-3 ${
-                  //   difficulty === "easy"
-                  //     ? "bg-emerald-500 dark:bg-emerald-600"
-                  //     : difficulty === "medium"
-                  //     ? "bg-amber-500 dark:bg-amber-600"
-                  //     : "bg-rose-500 dark:bg-rose-600"
-                  // }`}
+                    className="ml-3"
+                    // className={`ml-3 ${
+                    //   difficulty === "easy"
+                    //     ? "bg-emerald-500 dark:bg-emerald-600"
+                    //     : difficulty === "medium"
+                    //     ? "bg-amber-500 dark:bg-amber-600"
+                    //     : "bg-rose-500 dark:bg-rose-600"
+                    // }`}
                   >
-                    {/* {difficulty} */} Topic Here
+                    {/* {difficulty} */} {topic}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent className="bg-zinc-900 dark:bg-zinc-200 text-white dark:text-black">
@@ -263,23 +182,21 @@ const MCQ = () => {
         <CardContent className="pt-6 bg-white dark:bg-zinc-950">
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              {currentQuestion?.questionText}
+              {data.questionText}
             </h3>
           </div>
 
           <div className="space-y-3">
             <AnimatePresence mode="wait">
-              {currentQuestion?.options.map((option: any, index: any) => {
+              {data.options?.split("-").map((option: any, index: any) => {
                 const optionLabels = ["A", "B", "C", "D"];
                 const isSelected = selectedOption === option;
-
+                const isCorrectOption = option === data.correctOption;
                 const showOptionFeedback = showFeedback && isSelected;
-                const isCorrectOption =
-                  option === currentQuestion?.correctOption;
 
                 return (
                   <motion.div
-                    key={`${currentQuestionIndex}-${index}`}
+                    key={`${index}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
@@ -288,7 +205,7 @@ const MCQ = () => {
                     <Button
                       variant={isSelected ? "default" : "outline"}
                       className={`w-full justify-start text-left p-6 h-auto transition-all ${
-                        showOptionFeedback && isCorrectOption
+                        showFeedback && isCorrectOption
                           ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-900 dark:text-emerald-200"
                           : showOptionFeedback && !isCorrectOption
                           ? "bg-rose-50 dark:bg-rose-950/30 border-rose-500 text-rose-900 dark:text-rose-200"
@@ -311,18 +228,20 @@ const MCQ = () => {
                         </span>
                         <span className="text-md">{option}</span>
 
-                        {showOptionFeedback && (
+                        {showFeedback && (
                           <span className="ml-auto">
                             {isCorrectOption ? (
                               <CheckCircle2
                                 size={24}
-                                className="text-emerald-500 dark:text-emerald-400"
+                                className="text-emerald-500 ml-3 dark:text-emerald-400"
                               />
-                            ) : (
+                            ) : showOptionFeedback ? (
                               <XCircle
                                 size={24}
-                                className="text-rose-500 dark:text-rose-400"
+                                className="text-rose-500 ml-3 dark:text-rose-400"
                               />
+                            ) : (
+                              <></>
                             )}
                           </span>
                         )}
@@ -351,12 +270,7 @@ const MCQ = () => {
                   <Button
                     className="bg-black hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-black"
                     disabled={selectedOption === null || nextQuestionLoading}
-                    onClick={() => {
-                      if (selectedOption !== null && !showFeedback) {
-                        setShowFeedback(false);
-                        // handleNextQuestion(isCorrect || false);
-                      }
-                    }}
+                    onClick={handleNextQuestion}
                   >
                     {nextQuestionLoading ? (
                       <>Loading Next Question</>
