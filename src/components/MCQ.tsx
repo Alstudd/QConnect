@@ -181,80 +181,84 @@ const MCQ = ({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-6 bg-white dark:bg-zinc-950">
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              {data.questionText}
-            </h3>
-          </div>
+        {data && (
+          <CardContent className="pt-6 bg-white dark:bg-zinc-950">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                {data?.questionText}
+              </h3>
+            </div>
 
-          <div className="space-y-3">
-            <AnimatePresence mode="wait">
-              {data.options?.split("-").map((option: any, index: any) => {
-                const optionLabels = ["A", "B", "C", "D"];
-                const isSelected = selectedOption === option;
-                const isCorrectOption = option === data.correctOption;
-                const showOptionFeedback = showFeedback && isSelected;
+            <div className="space-y-3">
+              <AnimatePresence mode="wait">
+                {data?.options?.split("-").map((option: any, index: any) => {
+                  const optionLabels = ["A", "B", "C", "D"];
+                  const isSelected = selectedOption === option;
+                  const isCorrectOption = option === data.correctOption;
+                  const showOptionFeedback = showFeedback && isSelected;
 
-                return (
-                  <motion.div
-                    key={`${index}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2, delay: index * 0.1 }}
-                  >
-                    <Button
-                      variant={isSelected ? "default" : "outline"}
-                      className={`w-full justify-start text-left p-6 h-auto transition-all ${
-                        showFeedback && isCorrectOption
-                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-900 dark:text-emerald-200"
-                          : showOptionFeedback && !isCorrectOption
-                          ? "bg-rose-50 dark:bg-rose-950/30 border-rose-500 text-rose-900 dark:text-rose-200"
-                          : isSelected
-                          ? "bg-black dark:bg-white text-white dark:text-black"
-                          : "hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100"
-                      }`}
-                      onClick={() => handleOptionSelect(option)}
-                      disabled={selectedOption !== null || nextQuestionLoading}
+                  return (
+                    <motion.div
+                      key={`${index}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.1 }}
                     >
-                      <div className="flex items-center">
-                        <span
-                          className={`flex items-center justify-center w-8 h-8 rounded-full mr-3 ${
-                            isSelected
-                              ? "bg-white dark:bg-black text-black dark:text-white"
-                              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                          }`}
-                        >
-                          {optionLabels[index]}
-                        </span>
-                        <span className="text-md">{option}</span>
-
-                        {showFeedback && (
-                          <span className="ml-auto">
-                            {isCorrectOption ? (
-                              <CheckCircle2
-                                size={24}
-                                className="text-emerald-500 ml-3 dark:text-emerald-400"
-                              />
-                            ) : showOptionFeedback ? (
-                              <XCircle
-                                size={24}
-                                className="text-rose-500 ml-3 dark:text-rose-400"
-                              />
-                            ) : (
-                              <></>
-                            )}
+                      <Button
+                        variant={isSelected ? "default" : "outline"}
+                        className={`w-full justify-start text-left p-6 h-auto transition-all ${
+                          showFeedback && isCorrectOption
+                            ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-900 dark:text-emerald-200"
+                            : showOptionFeedback && !isCorrectOption
+                            ? "bg-rose-50 dark:bg-rose-950/30 border-rose-500 text-rose-900 dark:text-rose-200"
+                            : isSelected
+                            ? "bg-black dark:bg-white text-white dark:text-black"
+                            : "hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100"
+                        }`}
+                        onClick={() => handleOptionSelect(option)}
+                        disabled={
+                          selectedOption !== null || nextQuestionLoading
+                        }
+                      >
+                        <div className="flex items-center">
+                          <span
+                            className={`flex items-center justify-center w-8 h-8 rounded-full mr-3 ${
+                              isSelected
+                                ? "bg-white dark:bg-black text-black dark:text-white"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                            }`}
+                          >
+                            {optionLabels[index]}
                           </span>
-                        )}
-                      </div>
-                    </Button>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
-        </CardContent>
+                          <span className="text-md">{option}</span>
+
+                          {showFeedback && (
+                            <span className="ml-auto">
+                              {isCorrectOption ? (
+                                <CheckCircle2
+                                  size={24}
+                                  className="text-emerald-500 ml-3 dark:text-emerald-400"
+                                />
+                              ) : showOptionFeedback ? (
+                                <XCircle
+                                  size={24}
+                                  className="text-rose-500 ml-3 dark:text-rose-400"
+                                />
+                              ) : (
+                                <></>
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </Button>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </CardContent>
+        )}
 
         <CardFooter className="flex justify-between pt-6 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <Button
