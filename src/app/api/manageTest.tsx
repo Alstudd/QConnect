@@ -6,9 +6,6 @@ export async function getNumberOfTestsTaken(userId: string) {
     const count = await db.test.count({
       where: {
         studentId: userId,
-        submittedAt: {
-          not: null, // Only count submitted tests
-        },
       },
     });
     return count;
