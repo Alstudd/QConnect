@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   CardContent,
@@ -24,6 +25,11 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "~/components/ui/chart";
+import { getNumberOfQuestionsAttempted } from "~/app/api/manageAttempt";
+import { getNumberOfClassesEnrolled } from "~/app/api/manageEnrolledin";
+import { getNumberOfTestsTaken } from "~/app/api/manageTest";
+import { useUser } from "./AuthComponent";
+import { useEffect, useState } from "react";
 
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },
@@ -48,6 +54,31 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const Stats = () => {
+  const { user } = useUser();
+  const [data, setData] = useState({ qAttempt: 0, tAttempt: 0, cEnrolled: 0 });
+
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  const fetchData = async () => {
+    if (user) {
+      console.log("object");
+      const qa = await getNumberOfQuestionsAttempted(user.id);
+      const ta = await getNumberOfTestsTaken(user.id);
+      const ce = await getNumberOfClassesEnrolled(user.id);
+
+      console.log(qa, ta, ce);
+
+      setData((prev) => ({
+        ...prev,
+        qAttempt: qa,
+        tAttempt: ta,
+        cEnrolled: ce,
+      }));
+    }
+  };
+
   return (
     <div>
       <section className="mb-8">
@@ -58,21 +89,21 @@ const Stats = () => {
           <div className="grid gap-12 divide-y *:text-center md:grid-cols-3 md:gap-2 md:divide-x md:divide-y-0">
             <div className="space-y-4">
               <NumberTicker
-                value={20}
+                value={data.qAttempt}
                 className="whitespace-pre-wrap text-5xl font-bold tracking-tighter text-black dark:text-white"
               />
               <p>Questions Attempted</p>
             </div>
             <div className="space-y-4">
               <NumberTicker
-                value={3}
+                value={data.cEnrolled}
                 className="whitespace-pre-wrap text-5xl font-bold tracking-tighter text-black dark:text-white"
               />
               <p>Classes</p>
             </div>
             <div className="space-y-4">
               <NumberTicker
-                value={5}
+                value={data.tAttempt}
                 className="whitespace-pre-wrap text-5xl font-bold tracking-tighter text-black dark:text-white"
               />
               <p>Quizzes Attempted</p>
