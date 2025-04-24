@@ -123,7 +123,7 @@ export default function ClassroomPage() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://3.109.48.9:8000/upload/",
+        "https://qconnect-py-server.onrender.com/upload/",
         formData
       );
 

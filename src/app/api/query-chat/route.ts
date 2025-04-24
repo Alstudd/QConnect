@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const query = latestUserMessage.content;
 
     // Make the request to the external API
-    const response = await axios.post("http://3.109.48.9:8000/query_attempts", {
+    const response = await axios.post("https://qconnect-py-server.onrender.com/query_attempts", {
       query: query,
     });
 
