@@ -26,7 +26,7 @@ export async function generateQuestion(state: string, topicId: string) {
   formData.append("query", prompt);
 
   const rawResponse = await axios.post(
-    "http://127.0.0.1:8000/query",
+    "https://qconnect-py-server.onrender.com/query",
     formData,
     {
       headers: {
