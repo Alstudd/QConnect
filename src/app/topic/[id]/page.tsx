@@ -187,7 +187,7 @@ export default function TopicPage() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://3.109.48.9:8000/upload/",
+        "http://127.0.0.1:8000/upload/",
         documentFormData
       );
 

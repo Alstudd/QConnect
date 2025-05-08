@@ -123,7 +123,7 @@ export default function ClassroomPage() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://3.109.48.9:8000/upload/",
+        "http://127.0.0.1:8000/upload/",
         formData
       );
 
@@ -653,7 +653,12 @@ export default function ClassroomPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => router.push('/classrooms')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => router.push("/classrooms")}
+                >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Classrooms
                 </Button>
